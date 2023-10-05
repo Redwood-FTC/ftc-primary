@@ -107,15 +107,12 @@ public class TeamPropTest extends LinearOpMode {
         // Create the TensorFlow processor the easy way.
         // Create the TensorFlow processor by using a builder.
         tfod = new TfodProcessor.Builder()
-
                 .setModelFileName("team_props_1.tflite")
-
                 .setModelLabels(new String[] {"b","r"})
                 //.setIsModelTensorFlow2(true)
                 //.setIsModelQuantized(true)
                 //.setModelInputSize(300)
                 //.setModelAspectRatio(16.0 / 9.0)
-
                 .build();
         // Create the vision portal the easy way.
         if (USE_WEBCAM) {
