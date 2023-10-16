@@ -118,7 +118,7 @@ public class SensorColorTest extends LinearOpMode {
     // colors will report at or near 1, and you won't be able to determine what color you are
     // actually looking at. For this reason, it's better to err on the side of a lower gain
     // (but always greater than  or equal to 1).
-    float gain = 2;
+    float gain = 3;
 
     // Once per loop, we will update this hsvValues array. The first element (0) will contain the
     // hue, the second element (1) will contain the saturation, and the third element (2) will
@@ -201,6 +201,18 @@ public class SensorColorTest extends LinearOpMode {
               .addData("Saturation", "%.3f", hsvValues[1])
               .addData("Value", "%.3f", hsvValues[2]);
       telemetry.addData("Alpha", "%.3f", colors.alpha);
+
+      /* Logic to determine what color tape it is over. */
+      String tapeColor = "None";
+      float saturation = hsvValues[1];
+      if (saturation >= 0.6) {
+        if (colors.red > colors.blue) {
+          tapeColor = "Red";
+        } else{
+          tapeColor = "Blue";
+        }
+      }
+      telemetry.addData("Tape Color: ", tapeColor);
 
       /* If this color sensor also has a distance sensor, display the measured distance.
        * Note that the reported distance is only useful at very close range, and is impacted by
