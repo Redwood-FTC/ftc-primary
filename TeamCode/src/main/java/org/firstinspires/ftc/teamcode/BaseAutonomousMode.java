@@ -31,7 +31,7 @@ import java.util.Timer;
 @Config
 @Autonomous(group = "drive")
 public class BaseAutonomousMode extends LinearOpMode {
-    public static double TILE_WIDTH = 24; // in
+    public static double TILE_WIDTH = 24 * 24/21.5; // in
     private Servo purplePixelServo;
     private NormalizedColorSensor colorSensor;
     private TfodProcessor tfod;
@@ -45,6 +45,9 @@ public class BaseAutonomousMode extends LinearOpMode {
 
         /* Camera Setup Start */
         initTfod();
+        // X-value of line that separates left from center signal in camera image
+        int leftCenterDivider = 250; // Robot 11.5cm from near tile interlocks
+        float maxSignalDelay = 5000;
         /* Camera Setup End */
 
         /* Color Sensor Setup Start */
@@ -61,7 +64,7 @@ public class BaseAutonomousMode extends LinearOpMode {
         long startTime = System.currentTimeMillis();
         long currentTime = System.currentTimeMillis();
         String signal = new String("right");
-        while ((currentTime - startTime) < 5000){
+        while ((currentTime - startTime) < maxSignalDelay){
             currentTime = System.currentTimeMillis();
             /* Camera START */
             List<Recognition> currentRecognitions = tfod.getRecognitions();
@@ -69,7 +72,7 @@ public class BaseAutonomousMode extends LinearOpMode {
             for (Recognition recognition : currentRecognitions) {
                 double x = (recognition.getLeft() + recognition.getRight()) / 2 ;
                 double y = (recognition.getTop()  + recognition.getBottom()) / 2 ;
-                if (x < 240){
+                if (x < leftCenterDivider){
                     signal = "left";
                 } else {
                     signal = "center";
@@ -77,25 +80,29 @@ public class BaseAutonomousMode extends LinearOpMode {
                 break;
             }
         }
+        Trajectory toSignalTileTrajectory = drive.trajectoryBuilder(new Pose2d())
+                .forward(1 * TILE_WIDTH)
+                .build();
         Trajectory postSignalTrajectory;
         switch(signal){
             case "left":
-                 postSignalTrajectory = drive.trajectoryBuilder(new Pose2d())
-                    .forward(1 * TILE_WIDTH)
-                    .build();
+                 postSignalTrajectory  = drive.trajectoryBuilder(new Pose2d())
+                     .strafeLeft(0.5 * TILE_WIDTH)
+                     .build();
                 break;
             case "right":
             default:
-                postSignalTrajectory = drive.trajectoryBuilder(new Pose2d())
-                    .forward(2 * TILE_WIDTH)
-                    .build();
+                postSignalTrajectory  = drive.trajectoryBuilder(new Pose2d())
+                        .strafeLeft(0.5 * TILE_WIDTH)
+                        .build();
                 break;
             case "center":
                 postSignalTrajectory = drive.trajectoryBuilder(new Pose2d())
-                    .forward(3 * TILE_WIDTH)
+                    .forward(0.5 * TILE_WIDTH)
                     .build();
                 break;
         }
+        drive.followTrajectory(toSignalTileTrajectory);
         drive.followTrajectory(postSignalTrajectory);
 
         while (!isStopRequested() && opModeIsActive()){
