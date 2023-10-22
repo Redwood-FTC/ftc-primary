@@ -19,6 +19,8 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDir
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.tfod.TfodProcessor;
 
@@ -47,7 +49,7 @@ public class BaseAutonomousMode extends LinearOpMode {
         initTfod();
         // X-value of line that separates left from center signal in camera image
         int leftCenterDivider = 250; // Robot 11.5cm from near tile interlocks
-        float maxSignalDelay = 5000;
+        float maxSignalDelay = 5000; // ms
         /* Camera Setup End */
 
         /* Color Sensor Setup Start */
@@ -63,7 +65,9 @@ public class BaseAutonomousMode extends LinearOpMode {
 
         long startTime = System.currentTimeMillis();
         long currentTime = System.currentTimeMillis();
+        // Default to right signal
         String signal = new String("right");
+        // Wait up to maxSignalDelay milliseconds before assuming the signal is out of view.
         while ((currentTime - startTime) < maxSignalDelay){
             currentTime = System.currentTimeMillis();
             /* Camera START */
@@ -80,30 +84,25 @@ public class BaseAutonomousMode extends LinearOpMode {
                 break;
             }
         }
-        Trajectory toSignalTileTrajectory = drive.trajectoryBuilder(new Pose2d())
-                .forward(1 * TILE_WIDTH)
-                .build();
+        TrajectorySequenceBuilder toSignalTileTrajectoryBuilder = drive.trajectorySequenceBuilder(new Pose2d())
+                .forward(1 * TILE_WIDTH);
         Trajectory postSignalTrajectory;
         switch(signal){
             case "left":
-                 postSignalTrajectory  = drive.trajectoryBuilder(new Pose2d())
-                     .strafeLeft(0.5 * TILE_WIDTH)
-                     .build();
+                 toSignalTileTrajectoryBuilder
+                         .strafeLeft(0.5 * TILE_WIDTH);
                 break;
             case "right":
             default:
-                postSignalTrajectory  = drive.trajectoryBuilder(new Pose2d())
-                        .strafeLeft(0.5 * TILE_WIDTH)
-                        .build();
+                toSignalTileTrajectoryBuilder
+                        .strafeRight(0.5 * TILE_WIDTH);
                 break;
             case "center":
-                postSignalTrajectory = drive.trajectoryBuilder(new Pose2d())
-                    .forward(0.5 * TILE_WIDTH)
-                    .build();
+                toSignalTileTrajectoryBuilder
+                        .forward(0.5 * TILE_WIDTH);
                 break;
         }
-        drive.followTrajectory(toSignalTileTrajectory);
-        drive.followTrajectory(postSignalTrajectory);
+        drive.followTrajectorySequence(toSignalTileTrajectoryBuilder.build());
 
         while (!isStopRequested() && opModeIsActive()){
             telemetry.addData("Signal: ", signal);
