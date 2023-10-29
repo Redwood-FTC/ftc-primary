@@ -12,20 +12,21 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.robot.Robot;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
-import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import org.firstinspires.ftc.vision.tfod.TfodProcessor;
 
 import java.util.List;
-import java.util.Timer;
+import java.util.concurrent.TimeUnit;
 
 /*
  * This is a simple routine to test translational drive capabilities.
@@ -37,7 +38,10 @@ public class BaseAutonomousMode extends LinearOpMode {
     private Servo purplePixelServo;
     private NormalizedColorSensor colorSensor;
     private TfodProcessor tfod;
-    private VisionPortal visionPortal;
+    private VisionPortal tfodVisionPortal;
+    private VisionPortal aprilTagVisionPortal;
+    private AprilTagProcessor aprilTag;
+    private AprilTagDetection desiredTag = null;
     @Override
     public void runOpMode() throws InterruptedException {
         Telemetry telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -50,6 +54,9 @@ public class BaseAutonomousMode extends LinearOpMode {
         // X-value of line that separates left from center signal in camera image
         int leftCenterDivider = 250; // Robot 11.5cm from near tile interlocks
         float maxSignalDelay = 5000; // ms
+        // Initialize the Apriltag Detection process
+//        initAprilTag();
+//        setManualExposure(6, 250);  // Use low exposure time to reduce motion blur
         /* Camera Setup End */
 
         /* Color Sensor Setup Start */
@@ -58,6 +65,7 @@ public class BaseAutonomousMode extends LinearOpMode {
         colorSensor = hardwareMap.get(NormalizedColorSensor.class, "sensor_color");
         colorSensor.setGain(gain);
         purplePixelServo = hardwareMap.get(Servo.class, "purple_pixel_servo");
+        purplePixelServo.setPosition(0);
         /* Color Sensor Setup End */
 
 
@@ -66,7 +74,7 @@ public class BaseAutonomousMode extends LinearOpMode {
         long startTime = System.currentTimeMillis();
         long currentTime = System.currentTimeMillis();
         // Default to right signal
-        String signal = new String("right");
+        String signal = "right";
         // Wait up to maxSignalDelay milliseconds before assuming the signal is out of view.
         while ((currentTime - startTime) < maxSignalDelay){
             currentTime = System.currentTimeMillis();
@@ -90,56 +98,73 @@ public class BaseAutonomousMode extends LinearOpMode {
         switch(signal){
             case "left":
                  toSignalTileTrajectoryBuilder
-                         .strafeLeft(0.5 * TILE_WIDTH);
+                         .turn(Math.PI / 2);
                 break;
             case "right":
             default:
                 toSignalTileTrajectoryBuilder
-                        .strafeRight(0.5 * TILE_WIDTH);
+                        .turn(-Math.PI / 2);
                 break;
             case "center":
-                toSignalTileTrajectoryBuilder
-                        .forward(0.5 * TILE_WIDTH);
                 break;
         }
         drive.followTrajectorySequence(toSignalTileTrajectoryBuilder.build());
 
-        while (!isStopRequested() && opModeIsActive()){
-            telemetry.addData("Signal: ", signal);
-            /* Camera END */
-
+        // Creep forward until on the tape to drop the pixel.
+        boolean onTape = false;
+        Pose2d inTilePose = drive.getPoseEstimate();
+        while (!onTape){
             /* Color sensor check START */
             NormalizedRGBA colors = colorSensor.getNormalizedColors();
             Color.colorToHSV(colors.toColor(), hsvValues);
-            /* Logic to determine what color tape it is over. */
-            String tapeColor = "None";
+            /* Logic to what color tape it is over. */
             float saturation = hsvValues[1];
-            if (saturation >= 0.6) {
-                if (colors.red > colors.blue) {
-                    tapeColor = "Red";
-                } else{
-                    tapeColor = "Blue";
-                }
-            }
-            telemetry.addData("Tape Color: ", tapeColor);
-            /* Color sensor check END */
-
-            if (gamepad1.a){
-                purplePixelServo.setPosition(1);
-            } else{
-                purplePixelServo.setPosition(0);
-            }
-            //        drive.followTrajectory(trajectory);
-
-            Pose2d poseEstimate = drive.getPoseEstimate();
-            telemetry.addData("finalX", poseEstimate.getX());
-            telemetry.addData("finalY", poseEstimate.getY());
-            telemetry.addData("finalHeading", poseEstimate.getHeading());
+            onTape = saturation >= 0.6;
+            drive.followTrajectory(
+                    drive.trajectoryBuilder(drive.getPoseEstimate())
+                            .forward(1)
+                            .build()
+            );
+            telemetry.addData("Saturation: ", saturation);
             telemetry.update();
         }
-    }
-    private void initTfod() {
+        purplePixelServo.setPosition(1);
+        drive.followTrajectorySequence(
+                drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                        .waitSeconds(0.1)
+                        .lineToLinearHeading(inTilePose)
+                        .build()
+        );
+        /* Color sensor check END */
 
+//        int desired_tag_id = -1;
+//        switch(signal){
+//            case "left":
+//                desired_tag_id = 4; // RED ALLIANCE TODO update for both alliances
+//                break;
+//            case "center":
+//                desired_tag_id = 5;
+//                break;
+//            case "right":
+//                desired_tag_id = 6;
+//                break;
+//        }
+//        boolean targetFound = false;
+//        while (!targetFound){
+//            // Step through the list of detected tags and look for a matching tag
+//            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+//            for (AprilTagDetection detection : currentDetections) {
+//                if ((detection.metadata != null)
+//                        && (detection.id == desired_tag_id)){
+//                    targetFound = true;
+//                    desiredTag = detection;
+//                    break;  // don't look any further.
+//                }
+//            }
+//        }
+    }
+
+    private void initTfod() {
         // Create the TensorFlow processor the easy way.
         // Create the TensorFlow processor by using a builder.
         tfod = new TfodProcessor.Builder()
@@ -150,7 +175,59 @@ public class BaseAutonomousMode extends LinearOpMode {
                 //.setModelInputSize(300)
                 //.setModelAspectRatio(16.0 / 9.0)
                 .build();
-        visionPortal = VisionPortal.easyCreateWithDefaults(
+        tfodVisionPortal = VisionPortal.easyCreateWithDefaults(
                 hardwareMap.get(WebcamName.class, "Webcam 1"), tfod);
     }   // end method initTfod()
+
+    /**
+     * Initialize the AprilTag processor.
+     */
+    private void initAprilTag() {
+        // Create the AprilTag processor by using a builder.
+        aprilTag = new AprilTagProcessor.Builder().build();
+
+        // Create the vision portal by using a builder.
+        aprilTagVisionPortal = new VisionPortal.Builder()
+                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
+                .addProcessor(aprilTag)
+                .build();
+    }
+
+    /*
+     Manually set the camera gain and exposure.
+     This can only be called AFTER calling initAprilTag(), and only works for Webcams;
+    */
+    private void    setManualExposure(int exposureMS, int gain) {
+        // Wait for the camera to be open, then use the controls
+
+        if (aprilTagVisionPortal == null) {
+            return;
+        }
+
+        // Make sure camera is streaming before we try to set the exposure controls
+        if (aprilTagVisionPortal.getCameraState() != VisionPortal.CameraState.STREAMING) {
+            telemetry.addData("Camera", "Waiting");
+            telemetry.update();
+            while (!isStopRequested() && (aprilTagVisionPortal.getCameraState() != VisionPortal.CameraState.STREAMING)) {
+                sleep(20);
+            }
+            telemetry.addData("Camera", "Ready");
+            telemetry.update();
+        }
+
+        // Set camera controls unless we are stopping.
+        if (!isStopRequested())
+        {
+            ExposureControl exposureControl = aprilTagVisionPortal.getCameraControl(ExposureControl.class);
+            if (exposureControl.getMode() != ExposureControl.Mode.Manual) {
+                exposureControl.setMode(ExposureControl.Mode.Manual);
+                sleep(50);
+            }
+            exposureControl.setExposure((long)exposureMS, TimeUnit.MILLISECONDS);
+            sleep(20);
+            GainControl gainControl = aprilTagVisionPortal.getCameraControl(GainControl.class);
+            gainControl.setGain(gain);
+            sleep(20);
+        }
+    }
 }
