@@ -65,7 +65,7 @@ public class BaseAutonomousMode extends LinearOpMode {
         colorSensor = hardwareMap.get(NormalizedColorSensor.class, "sensor_color");
         colorSensor.setGain(gain);
         purplePixelServo = hardwareMap.get(Servo.class, "purple_pixel_servo");
-        purplePixelServo.setPosition(0);
+        purplePixelServo.setPosition(0.1350);
         /* Color Sensor Setup End */
 
 
@@ -119,7 +119,7 @@ public class BaseAutonomousMode extends LinearOpMode {
             Color.colorToHSV(colors.toColor(), hsvValues);
             /* Logic to what color tape it is over. */
             float saturation = hsvValues[1];
-            onTape = saturation >= 0.6;
+            onTape = (saturation >= 0.6) || (colors.red > 0.04);
             drive.followTrajectory(
                     drive.trajectoryBuilder(drive.getPoseEstimate())
                             .forward(1)
@@ -128,10 +128,10 @@ public class BaseAutonomousMode extends LinearOpMode {
             telemetry.addData("Saturation: ", saturation);
             telemetry.update();
         }
-        purplePixelServo.setPosition(1);
+        purplePixelServo.setPosition(-0.6000);
         drive.followTrajectorySequence(
                 drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                        .waitSeconds(0.1)
+                        .waitSeconds(0.5)
                         .lineToLinearHeading(inTilePose)
                         .build()
         );
