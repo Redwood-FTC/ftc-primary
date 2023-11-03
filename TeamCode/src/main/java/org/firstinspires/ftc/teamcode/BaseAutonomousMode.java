@@ -35,6 +35,8 @@ import java.util.concurrent.TimeUnit;
 @Autonomous(group = "drive")
 public class BaseAutonomousMode extends LinearOpMode {
     public static double TILE_WIDTH = 24 * 24/21.5; // in
+    public static double PIXEL_DROPPED = -0.4000;
+    public static double PIXEL_HOLDING = 0.1200;
     private Servo purplePixelServo;
     private NormalizedColorSensor colorSensor;
     private TfodProcessor tfod;
@@ -65,7 +67,7 @@ public class BaseAutonomousMode extends LinearOpMode {
         colorSensor = hardwareMap.get(NormalizedColorSensor.class, "sensor_color");
         colorSensor.setGain(gain);
         purplePixelServo = hardwareMap.get(Servo.class, "purple_pixel_servo");
-        purplePixelServo.setPosition(0.1200);
+        purplePixelServo.setPosition(PIXEL_HOLDING);
         /* Color Sensor Setup End */
 
 
@@ -128,7 +130,9 @@ public class BaseAutonomousMode extends LinearOpMode {
             telemetry.addData("Saturation: ", saturation);
             telemetry.update();
         }
-        purplePixelServo.setPosition(-0.4000);
+        purplePixelServo.setPosition(PIXEL_DROPPED);
+
+        //TODO: replace this with manual jiggling of the motors
         drive.followTrajectory( //attempt to shake the pixel loose
             drive.trajectoryBuilder(drive.getPoseEstimate())
                     .forward(1)
@@ -139,10 +143,10 @@ public class BaseAutonomousMode extends LinearOpMode {
                         .forward(-1)
                         .build()
         );
-        
+
         sleep(500); //make sure the pixel is on the ground before we set the servo
         //it drags the pixel with it unless it's at a 90 degree angle to the ground
-        purplePixelServo.setPosition(0.1200);
+        purplePixelServo.setPosition(PIXEL_HOLDING);
 
         drive.followTrajectorySequence(
                 drive.trajectorySequenceBuilder(drive.getPoseEstimate())
