@@ -65,7 +65,7 @@ public class BaseAutonomousMode extends LinearOpMode {
         colorSensor = hardwareMap.get(NormalizedColorSensor.class, "sensor_color");
         colorSensor.setGain(gain);
         purplePixelServo = hardwareMap.get(Servo.class, "purple_pixel_servo");
-        purplePixelServo.setPosition(0.1350);
+        purplePixelServo.setPosition(0.1200);
         /* Color Sensor Setup End */
 
 
@@ -128,13 +128,29 @@ public class BaseAutonomousMode extends LinearOpMode {
             telemetry.addData("Saturation: ", saturation);
             telemetry.update();
         }
-        purplePixelServo.setPosition(-0.6000);
+        purplePixelServo.setPosition(-0.4000);
+        drive.followTrajectory( //attempt to shake the pixel loose
+            drive.trajectoryBuilder(drive.getPoseEstimate())
+                    .forward(1)
+                    .build()
+        );
+        drive.followTrajectory(
+                drive.trajectoryBuilder(drive.getPoseEstimate())
+                        .forward(-1)
+                        .build()
+        );
+        
+        sleep(500); //make sure the pixel is on the ground before we set the servo
+        //it drags the pixel with it unless it's at a 90 degree angle to the ground
+        purplePixelServo.setPosition(0.1200);
+
         drive.followTrajectorySequence(
                 drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                         .waitSeconds(0.5)
                         .lineToLinearHeading(inTilePose)
                         .build()
         );
+
         /* Color sensor check END */
 
 //        int desired_tag_id = -1;
