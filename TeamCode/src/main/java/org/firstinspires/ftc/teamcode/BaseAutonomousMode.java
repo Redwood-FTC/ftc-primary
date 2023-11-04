@@ -132,19 +132,26 @@ public class BaseAutonomousMode extends LinearOpMode {
         }
         purplePixelServo.setPosition(PIXEL_DROPPED);
 
-        //TODO: replace this with manual jiggling of the motors
-        drive.followTrajectory( //attempt to shake the pixel loose
-            drive.trajectoryBuilder(drive.getPoseEstimate())
-                    .forward(1)
-                    .build()
-        );
-        drive.followTrajectory(
-                drive.trajectoryBuilder(drive.getPoseEstimate())
-                        .forward(-1)
-                        .build()
-        );
+        for (int i = 0 ; i < 10; i++){
+            drive.setMotorPowers(1,1,1,1);
+            sleep(100);
+            drive.setMotorPowers(-1,-1,-1,-1);
+            sleep(100);
+        }
 
-        sleep(500); //make sure the pixel is on the ground before we set the servo
+//        //TODO: replace this with manual jiggling of the motors
+//        drive.followTrajectory( //attempt to shake the pixel loose
+//            drive.trajectoryBuilder(drive.getPoseEstimate())
+//                    .forward(1)
+//                    .build()
+//        );
+//        drive.followTrajectory(
+//                drive.trajectoryBuilder(drive.getPoseEstimate())
+//                        .forward(-1)
+//                        .build()
+//        );
+//
+//        sleep(500); //make sure the pixel is on the ground before we set the servo
         //it drags the pixel with it unless it's at a 90 degree angle to the ground
         purplePixelServo.setPosition(PIXEL_HOLDING);
 
@@ -205,7 +212,6 @@ public class BaseAutonomousMode extends LinearOpMode {
     private void initAprilTag() {
         // Create the AprilTag processor by using a builder.
         aprilTag = new AprilTagProcessor.Builder().build();
-
         // Create the vision portal by using a builder.
         aprilTagVisionPortal = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))

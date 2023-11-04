@@ -37,6 +37,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.checkerframework.checker.fenum.qual.SwingCompassDirection;
+
 /**
  * This file contains an example of a Linear "OpMode".
  * An OpMode is a 'program' that runs in either the autonomous or the teleop period of an FTC match.
@@ -76,6 +78,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
     private DcMotor rightBackDrive = null;
     private Servo hoistServo = null;
     private Servo launchServo = null;
+    private DcMotor winchMotor = null;
 
     @Override
     public void runOpMode() {
@@ -90,6 +93,8 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         hoistServo = hardwareMap.get(Servo.class, "hoist_servo");
         launchServo = hardwareMap.get(Servo.class, "launch_servo");
         launchServo.setPosition(0.05);
+        winchMotor = hardwareMap.get(DcMotor.class, "winch_motor");
+        winchMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
@@ -121,7 +126,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             double axial   = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
             double lateral =  gamepad1.left_stick_x;
             double yaw     =  gamepad1.right_stick_x;
-            double hoistPower = 0.5;
+            double hoistPower;
             if (gamepad1.dpad_up) {
                 hoistPower = 0.0;
             } else if (gamepad1.dpad_down) {
@@ -129,7 +134,14 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             } else {
                 hoistPower = 0.5;
             }
-
+            double winchPower;
+            if (gamepad1.dpad_left) {
+                winchPower = -1.0;
+            } else if (gamepad1.dpad_right) {
+                winchPower = 1.0;
+            } else{
+                winchPower = 0.0;
+            }
 
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
             // Set up a variable for each drive wheel to save the power level for telemetry.
@@ -178,6 +190,8 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             if (gamepad1.right_bumper){
                 launchServo.setPosition(0.5);
             }
+
+            winchMotor.setPower(winchPower);
 
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
