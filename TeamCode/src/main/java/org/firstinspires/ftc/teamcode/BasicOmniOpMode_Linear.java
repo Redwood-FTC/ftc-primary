@@ -93,7 +93,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         launchServo.setPosition(LAUNCH_SERVO_CLOSED);
         winchMotor = hardwareMap.get(DcMotor.class, "winch_motor");
         winchMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        
+
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
         // ########################################################################################
