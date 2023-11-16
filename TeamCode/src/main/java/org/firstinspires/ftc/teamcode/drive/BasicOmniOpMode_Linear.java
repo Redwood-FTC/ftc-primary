@@ -83,6 +83,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
     private Servo bucketServo = null;
     private DcMotor armAngleMotor = null;
     private DcMotor armExtensionMotor = null;
+    private DcMotor intakeMotor = null;
 
 
     @Override
@@ -106,16 +107,18 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         wristServo = hardwareMap.get(Servo.class, "wrist_servo");
         wristServo.setPosition(1);
         bucketServo = hardwareMap.get(Servo.class, "bucket_servo");
-        bucketServo.setPosition(0);
+        bucketServo.setPosition(0.5);
 
         armAngleMotor = hardwareMap.get(DcMotor.class, "arm_angle_motor");
         armExtensionMotor = hardwareMap.get(DcMotor.class, "arm_extension_motor");
 
+        intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
+        intakeMotor.setPower(0);
 
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
         // ########################################################################################
-        // Most robots need the motors on one side to be reversed to drive forward.
+        // Most robots need the motors on one side. to be reversed to drive forward.
         // The motor reversals shown here are for a "direct drive" robot (the wheels turn the same direction as the motor shaft)
         // If your robot has additional gear reductions or uses a right-angled drive, it's important to ensure
         // that your motors are turning in the correct direction.  So, start out with the reversals here, BUT
@@ -137,6 +140,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         double wristPosition = 1;
         long timeWristControlled = System.currentTimeMillis();
+        long timeLastExtend = System.currentTimeMillis();
         while (opModeIsActive()) {
             double max;
 
@@ -170,11 +174,20 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 
             if (gamepad1.left_trigger > 0.5) {
                 bucketServo.setPosition(1);
+                intakeMotor.setPower(1); //not confirmed
             } // pending actual behavior
             else {
-                bucketServo.setPosition(0);
+                bucketServo.setPosition(0.5);
             }
-            
+
+//-850 resting, 1300 extended
+            //extension motor
+            double extendPower = gamepad1.right_trigger;
+            if ((extendPower > 0.05) && ((System.currentTimeMillis() - timeLastExtend) > 50)) {
+                //set to 30 times extend power?
+                extendPower *= 25;
+            }
+
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
             // Set up a variable for each drive wheel to save the power level for telemetry.
             double leftFrontPower  = axial + lateral + yaw;
@@ -218,7 +231,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             leftBackDrive.setPower(leftBackPower);
             rightBackDrive.setPower(rightBackPower);
 
-            hoistServo.setPosition(hoistPower);
+            //hoistServo.setPosition(hoistPower);
             long planeLaunched = -1;
             if (gamepad1.right_bumper){
                 if (planeLaunched == -1) {
