@@ -87,6 +87,8 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+        double LAUNCH_SERVO_OPEN = 0.5;
+        double LAUNCH_SERVO_CLOSED = 0.05;
 
         // Initialize the hardware variables. Note that the strings used here must correspond
         // to the names assigned during the robot configuration step on the DS or RC devices.
@@ -199,8 +201,15 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             rightBackDrive.setPower(rightBackPower);
 
             hoistServo.setPosition(hoistPower);
+            long planeLaunched = -1;
             if (gamepad1.right_bumper){
-                launchServo.setPosition(0.5);
+                if (planeLaunched == -1) {
+                    launchServo.setPosition(LAUNCH_SERVO_OPEN);
+                    planeLaunched = System.currentTimeMillis();
+                } //after plane is launched, same button moves the servo back
+            }
+            if ((System.currentTimeMillis() - planeLaunched) >= 500) {
+                launchServo.setPosition(LAUNCH_SERVO_CLOSED);
             }
 
             winchMotor.setPower(winchPower);
