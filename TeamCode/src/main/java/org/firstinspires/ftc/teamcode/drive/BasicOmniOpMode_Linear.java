@@ -174,22 +174,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             else {
                 bucketServo.setPosition(0);
             }
-
-            hoistServo.setPosition(hoistPower);
-            long planeLaunched = -1;
-            if (gamepad1.right_bumper){
-                if (planeLaunched == -1) {
-                    launchServo.setPosition(LAUNCH_SERVO_OPEN);
-                    planeLaunched = System.currentTimeMillis();
-                } //after plane is launched, same button moves the servo back
-            }
-            if ((System.currentTimeMillis() - planeLaunched) >= 500) {
-                launchServo.setPosition(LAUNCH_SERVO_CLOSED);
-            }
-
-
-
-
+            
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
             // Set up a variable for each drive wheel to save the power level for telemetry.
             double leftFrontPower  = axial + lateral + yaw;
