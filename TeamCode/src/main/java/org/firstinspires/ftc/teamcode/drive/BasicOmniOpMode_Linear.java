@@ -183,6 +183,8 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 //-850 resting, 1300 extended
             //extension motor
             double extendPower = gamepad1.right_trigger;
+            extendPower = 0;//TEMPORARY SETTING TO 0
+            //TO DISABLE UNTIL LIMITS ADDED
             if ((extendPower > 0.05) && ((System.currentTimeMillis() - timeLastExtend) > 50)) {
                 //set to 30 times extend power?
                 extendPower *= 25;
