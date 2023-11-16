@@ -79,6 +79,11 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
     private Servo hoistServo = null;
     private Servo launchServo = null;
     private DcMotor winchMotor = null;
+    private Servo wristServo = null;
+    private Servo bucketServo = null;
+    private DcMotor armAngleMotor = null;
+    private DcMotor armExtensionMotor = null;
+
 
     @Override
     public void runOpMode() {
@@ -95,6 +100,13 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         launchServo.setPosition(0.05);
         winchMotor = hardwareMap.get(DcMotor.class, "winch_motor");
         winchMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
+        wristServo = hardwareMap.get(Servo.class, "wrist_servo");
+        bucketServo = hardwareMap.get(Servo.class, "bucket_servo");
+
+        armAngleMotor = hardwareMap.get(DcMotor.class, "arm_angle_motor");
+        armExtensionMotor = hardwareMap.get(DcMotor.class, "arm_extension_motor");
+
 
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
