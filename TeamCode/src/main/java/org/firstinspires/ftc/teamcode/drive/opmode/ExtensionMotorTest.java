@@ -63,7 +63,7 @@ public class ExtensionMotorTest extends LinearOpMode {
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
-        extensionMotor  = hardwareMap.get(DcMotor.class, "extension_motor");
+        extensionMotor  = hardwareMap.get(DcMotor.class, "arm_extension_motor");
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
