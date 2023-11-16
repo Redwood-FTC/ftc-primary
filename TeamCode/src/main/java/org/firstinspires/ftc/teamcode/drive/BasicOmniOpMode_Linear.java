@@ -104,7 +104,9 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         winchMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         wristServo = hardwareMap.get(Servo.class, "wrist_servo");
+        wristServo.setPosition(1);
         bucketServo = hardwareMap.get(Servo.class, "bucket_servo");
+        bucketServo.setPosition(0);
 
         armAngleMotor = hardwareMap.get(DcMotor.class, "arm_angle_motor");
         armExtensionMotor = hardwareMap.get(DcMotor.class, "arm_extension_motor");
@@ -133,6 +135,8 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         runtime.reset();
 
         // run until the end of the match (driver presses STOP)
+        double wristPosition = 1;
+        long timeWristControlled = System.currentTimeMillis();
         while (opModeIsActive()) {
             double max;
 
@@ -156,6 +160,35 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             } else{
                 winchPower = 0.0;
             }
+
+            if (gamepad1.left_bumper && ((System.currentTimeMillis() - timeWristControlled) > 300)) {
+                //instead of 300 however long it takes to go between, plus a little
+                wristPosition = (wristPosition == 1 ? 0 : 1);
+                timeWristControlled = System.currentTimeMillis();
+            }
+            wristServo.setPosition(wristPosition);
+
+            if (gamepad1.left_trigger > 0.5) {
+                bucketServo.setPosition(1);
+            } // pending actual behavior
+            else {
+                bucketServo.setPosition(0);
+            }
+
+            hoistServo.setPosition(hoistPower);
+            long planeLaunched = -1;
+            if (gamepad1.right_bumper){
+                if (planeLaunched == -1) {
+                    launchServo.setPosition(LAUNCH_SERVO_OPEN);
+                    planeLaunched = System.currentTimeMillis();
+                } //after plane is launched, same button moves the servo back
+            }
+            if ((System.currentTimeMillis() - planeLaunched) >= 500) {
+                launchServo.setPosition(LAUNCH_SERVO_CLOSED);
+            }
+
+
+
 
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
             // Set up a variable for each drive wheel to save the power level for telemetry.
