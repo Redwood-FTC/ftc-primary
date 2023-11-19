@@ -111,9 +111,13 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         bucketServo.setPosition(0.5);
 
         armAngleMotor = hardwareMap.get(DcMotor.class, "arm_angle_motor");
-        //armExtensionMotor = hardwareMap.get(DcMotor.class, "arm_extension_motor");
-        //armExtensionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        //armExtensionMotor.setPower(0);
+        armAngleMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        armExtensionMotor = hardwareMap.get(DcMotor.class, "arm_extension_motor");
+        armExtensionMotor.setPower(0);
+        armExtensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armExtensionMotor.setTargetPosition(0);
+        armExtensionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
         intakeMotor.setPower(0);
@@ -191,23 +195,35 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 //0 +- 10 resting, 2215 +- 5 extended
             //extension motor
             double extendPower = gamepad1.right_trigger;
+            double retractPower = gamepad1.left_trigger;
             //extendPower = 0;//TEMPORARY SETTING TO 0
             //TO DISABLE UNTIL LIMITS ADDED
-            //TODO: GET CURRENT AT BEGGINING, USE THAT + 2200 AS THE MAX TO AVOID THE PROBLEM
-            //WITH IT VARYING
+            //TODO: GET CURRENT AT BEGGINING, USE THAT + 2200 AS THE MAX TO AVOID THE PROBLEM WITH IT VARYING
             if ((extendPower > 0.05) && ((System.currentTimeMillis() - timeLastExtend) > 50)) {
                 //set to 30 times extend power?
-                extendPower *= 25;
+                timeLastExtend = System.currentTimeMillis();
+                //extendPower * 1.25
+                //int extendPosition = (int());
                 //armExtensionMotor.setTargetPosition();
+                //armExtensionMotor.setTargetPosition();
+            }
+
+            armExtensionMotor.setPower(1.0);
+            if (gamepad1.right_trigger > 0.5) {
+                armExtensionMotor.setTargetPosition(-2100);
+            } else if (gamepad1.left_trigger > 0.5) {
+                armExtensionMotor.setTargetPosition(-50);
+            } else {
+                armExtensionMotor.setTargetPosition(armExtensionMotor.getCurrentPosition());
             }
 
             //armExtensionMotor.setPower(0.1);
             if (gamepad1.x) {
-                //armExtensionMotor.setTargetPosition(-1500);
+                armAngleMotor.setPower(0.3);
             } else if (gamepad1.y) {
-                //armExtensionMotor.setTargetPosition(-1000);
+                armAngleMotor.setPower(-0.3);
             } else {
-                //armExtensionMotor.setTargetPosition(-1250);
+                armAngleMotor.setPower(0.0);
             }
 
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
@@ -265,8 +281,10 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
                 launchServo.setPosition(LAUNCH_SERVO_CLOSED);
             }
 
-            \winchMotor.setPower(winchPower);
+            winchMotor.setPower(winchPower);
 
+            telemetry.addData("Extension_Motor encoder value: ", armExtensionMotor.getCurrentPosition());
+            telemetry.addData("Angle_Motor encoder value: ",  armAngleMotor.getCurrentPosition());
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
