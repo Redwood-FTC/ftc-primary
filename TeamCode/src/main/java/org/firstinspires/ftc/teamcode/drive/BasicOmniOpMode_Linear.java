@@ -204,36 +204,20 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
                 intakeMotor.setPower(0);
             }
 
-//0 +- 10 resting, 2215 +- 5 extended
-            //extension motor
-            double extendPower = gamepad1.right_trigger;
-            double retractPower = gamepad1.left_trigger;
-            //extendPower = 0;//TEMPORARY SETTING TO 0
-            //TO DISABLE UNTIL LIMITS ADDED
-            //TODO: GET CURRENT AT BEGGINING, USE THAT + 2200 AS THE MAX TO AVOID THE PROBLEM WITH IT VARYING
-            if ((extendPower > 0.05) && ((System.currentTimeMillis() - timeLastExtend) > 50)) {
-                //set to 30 times extend power?
-                timeLastExtend = System.currentTimeMillis();
-                //extendPower * 1.25
-                //int extendPosition = (int());
-                //armExtensionMotor.setTargetPosition();
-                //armExtensionMotor.setTargetPosition();
-            }
-
-            armExtensionMotor.setPower(1.0);
-            if (gamepad1.right_trigger > 0.5) {
+            if (gamepad1.right_trigger > 0.05) {
                 armExtensionMotor.setTargetPosition(-2100);
-            } else if (gamepad1.left_trigger > 0.5) {
-                armExtensionMotor.setTargetPosition(-50);
+                armExtensionMotor.setPower(gamepad1.right_trigger);
+            } else if (gamepad1.left_trigger > 0.05) {
+                armExtensionMotor.setPower(gamepad1.left_trigger);
+                armExtensionMotor.setTargetPosition(0);
             } else {
-                armExtensionMotor.setTargetPosition(armExtensionMotor.getCurrentPosition());
+                armExtensionMotor.setPower(0);
             }
 
-            //armExtensionMotor.setPower(0.1);
             if (gamepad1.x) {
-                armAngleMotor.setPower(0.3);
+                armAngleMotor.setPower(-1.0);
             } else if (gamepad1.y) {
-                armAngleMotor.setPower(-0.3);
+                armAngleMotor.setPower(1.0);
             } else {
                 armAngleMotor.setPower(0.0);
             }
