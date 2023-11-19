@@ -176,7 +176,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 //                winchPower = 0.0;
 //            } IMPORTANT: UNCOMMENT LATER (commented for testing intake_angle_servo)
 
-            // Test code for angle_intake_servo
+            // Test code for intake_angle_servo
             // Remember to find correct values later
             if (gamepad1.dpad_left) {
                 intakeAngleServo.setPosition(1);
