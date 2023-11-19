@@ -265,17 +265,17 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             leftBackDrive.setPower(leftBackPower);
             rightBackDrive.setPower(rightBackPower);
 
-            //hoistServo.setPosition(hoistPower);
-            long planeLaunched = -1;
-            if (gamepad1.right_bumper){
-                if (planeLaunched == -1) {
-                    launchServo.setPosition(LAUNCH_SERVO_OPEN);
-                    planeLaunched = System.currentTimeMillis();
-                } //after plane is launched, same button moves the servo back
-            }
-            if ((System.currentTimeMillis() - planeLaunched) >= 500) {
-                launchServo.setPosition(LAUNCH_SERVO_CLOSED);
-            }
+//            //hoistServo.setPosition(hoistPower);
+//            long planeLaunched = -1;
+//            if (gamepad1.right_bumper){
+//                if (planeLaunched == -1) {
+//                    launchServo.setPosition(LAUNCH_SERVO_OPEN);
+//                    planeLaunched = System.currentTimeMillis();
+//                } //after plane is launched, same button moves the servo back
+//            }
+//            if ((System.currentTimeMillis() - planeLaunched) >= 500) {
+//                launchServo.setPosition(LAUNCH_SERVO_CLOSED);
+//            }
 
 //            winchMotor.setPower(winchPower); // UNCOMMENT LATER (commented for testing intake_angle_servo)
 
