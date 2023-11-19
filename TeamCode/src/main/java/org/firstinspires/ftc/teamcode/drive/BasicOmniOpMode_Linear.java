@@ -82,6 +82,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
     private DcMotor winchMotor = null;
     private Servo wristServo = null;
     private Servo bucketServo = null;
+    private Servo intakeAngleServo = null;
     private DcMotor armAngleMotor = null;
     private DcMotor armExtensionMotor = null;
     private DcMotor intakeMotor = null;
@@ -109,6 +110,8 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         wristServo.setPosition(1);
         bucketServo = hardwareMap.get(Servo.class, "bucket_servo");
         bucketServo.setPosition(0.5);
+        intakeAngleServo = hardwareMap.get(Servo.class, "intake_angle_servo");
+        intakeAngleServo.setPosition(0);
 
         armAngleMotor = hardwareMap.get(DcMotor.class, "arm_angle_motor");
         armAngleMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -122,10 +125,11 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
         intakeMotor.setPower(0);
 
+
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
         // ########################################################################################
-        // Most robots need the motors on one side. to be reversed to drive forward.
+        // Most robots need the motors on one side to be reversed to drive forward.
         // The motor reversals shown here are for a "direct drive" robot (the wheels turn the same direction as the motor shaft)
         // If your robot has additional gear reductions or uses a right-angled drive, it's important to ensure
         // that your motors are turning in the correct direction.  So, start out with the reversals here, BUT
@@ -163,13 +167,21 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             } else {
                 hoistPower = 0.5;
             }
-            double winchPower;
+//            double winchPower;
+//            if (gamepad1.dpad_left) {
+//                winchPower = -1.0;
+//            } else if (gamepad1.dpad_right) {
+//                winchPower = 1.0;
+//            } else {
+//                winchPower = 0.0;
+//            } IMPORTANT: UNCOMMENT LATER (commented for testing intake_angle_servo)
+
+            // Test code for angle_intake_servo
+            // Remember to find correct values later
             if (gamepad1.dpad_left) {
-                winchPower = -1.0;
+                intakeAngleServo.setPosition(1);
             } else if (gamepad1.dpad_right) {
-                winchPower = 1.0;
-            } else{
-                winchPower = 0.0;
+                intakeAngleServo.setPosition(0);
             }
 
             if (gamepad1.left_bumper && ((System.currentTimeMillis() - timeWristControlled) > 1000)) {
@@ -281,10 +293,11 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
                 launchServo.setPosition(LAUNCH_SERVO_CLOSED);
             }
 
-            winchMotor.setPower(winchPower);
+//            winchMotor.setPower(winchPower); // UNCOMMENT LATER (commented for testing intake_angle_servo)
 
             telemetry.addData("Extension_Motor encoder value: ", armExtensionMotor.getCurrentPosition());
             telemetry.addData("Angle_Motor encoder value: ",  armAngleMotor.getCurrentPosition());
+            telemetry.addData("Angle_Intake_Servo encoder value: ", intakeAngleServo.getPosition());
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
