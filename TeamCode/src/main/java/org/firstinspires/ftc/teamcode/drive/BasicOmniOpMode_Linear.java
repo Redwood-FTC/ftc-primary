@@ -40,6 +40,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.checkerframework.checker.fenum.qual.SwingCompassDirection;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * This file contains an example of a Linear "OpMode".
  * An OpMode is a 'program' that runs in either the autonomous or the teleop period of an FTC match.
@@ -86,7 +88,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
     private DcMotor armAngleMotor = null;
     private DcMotor armExtensionMotor = null;
     private DcMotor intakeMotor = null;
-
+    private Servo hookReleaseServo = null;
 
     @Override
     public void runOpMode() {
@@ -110,8 +112,9 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         wristServo.setPosition(1);
         bucketServo = hardwareMap.get(Servo.class, "bucket_servo");
         bucketServo.setPosition(0.5);
+
         intakeAngleServo = hardwareMap.get(Servo.class, "intake_angle_servo");
-        intakeAngleServo.setPosition(0);
+        intakeAngleServo.setPosition(1);
 
         armAngleMotor = hardwareMap.get(DcMotor.class, "arm_angle_motor");
         armAngleMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -124,6 +127,8 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 
         intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
         intakeMotor.setPower(0);
+
+        hookReleaseServo = hardwareMap.get(Servo.class, "hook_release_servo");
 
 
         // ########################################################################################
@@ -151,7 +156,6 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         double wristPosition = 1;
         long timeWristControlled = System.currentTimeMillis();
-        long timeLastExtend = System.currentTimeMillis();
         while (opModeIsActive()) {
             double max;
 
@@ -161,12 +165,14 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             double yaw     =  gamepad1.right_stick_x;
             double hoistPower;
             if (gamepad1.dpad_up) {
-                hoistPower = 0.0;
+                hoistServo.setPosition(0.0);
             } else if (gamepad1.dpad_down) {
-                hoistPower = 1.0;
+                hoistServo.setPosition(1.0);
             } else {
-                hoistPower = 0.5;
+                //hoistPower = 0.5;
             }
+            //hoistServo.setPosition(hoistPower);
+
 //            double winchPower;
 //            if (gamepad1.dpad_left) {
 //                winchPower = -1.0;
@@ -178,9 +184,9 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 
             // Test code for intake_angle_servo
             // Remember to find correct values later
-            if (gamepad1.dpad_left) {
-                intakeAngleServo.setPosition(1);
-            } else if (gamepad1.dpad_right) {
+
+
+            if (runtime.now(TimeUnit.MILLISECONDS) > 700) {
                 intakeAngleServo.setPosition(0);
             }
 
@@ -265,7 +271,6 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             leftBackDrive.setPower(leftBackPower);
             rightBackDrive.setPower(rightBackPower);
 
-//            //hoistServo.setPosition(hoistPower);
 //            long planeLaunched = -1;
 //            if (gamepad1.right_bumper){
 //                if (planeLaunched == -1) {
@@ -276,7 +281,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 //            if ((System.currentTimeMillis() - planeLaunched) >= 500) {
 //                launchServo.setPosition(LAUNCH_SERVO_CLOSED);
 //            }
-
+//
 //            winchMotor.setPower(winchPower); // UNCOMMENT LATER (commented for testing intake_angle_servo)
 
             telemetry.addData("Extension_Motor encoder value: ", armExtensionMotor.getCurrentPosition());
@@ -286,5 +291,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
             telemetry.update();
+            //check if opmode not active, then wait while we close the intake angle servo
         }
-    }}
+    }
+}
