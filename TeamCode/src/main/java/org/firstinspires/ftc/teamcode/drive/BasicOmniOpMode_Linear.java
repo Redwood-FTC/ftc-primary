@@ -191,13 +191,22 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
                 intakeAngleServo.setPosition(0);
             }
 
-            if (gamepad1.left_bumper && ((System.currentTimeMillis() - timeWristControlled) > 1000)) {
-                //takes 3 seconds to go between positions
-                //delay may need to be extended to prevent malfunction
-                //TODO: ADD PROTECTION THAT ARM MUST BE EXTENDED
-                wristPosition = (wristPosition == 1 ? 0 : 1);
-                timeWristControlled = System.currentTimeMillis();
+
+            if (gamepad1.dpad_right) {
+                
+            } else if (gamepad1.dpad_left) {
+
+            } else {
+
             }
+
+//            if (gamepad1.left_bumper && ((System.currentTimeMillis() - timeWristControlled) > 1000)) {
+//                //takes 3 seconds to go between positions
+//                //delay may need to be extended to prevent malfunction
+//                //TODO: ADD PROTECTION THAT ARM MUST BE EXTENDED
+//                wristPosition = (wristPosition == 1 ? 0 : 1);
+//                timeWristControlled = System.currentTimeMillis();
+//            }
             wristServo.setPosition(wristPosition);
 
             if (gamepad1.a) {
