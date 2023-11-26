@@ -181,6 +181,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             } else {
                 winchPower = 0.0;
             }
+            winchMotor.setPower(winchPower);
 
             // Test code for intake_angle_servo
             // Remember to find correct values later
@@ -282,7 +283,6 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 //                launchServo.setPosition(LAUNCH_SERVO_CLOSED);
 //            }
 //
-//            winchMotor.setPower(winchPower); // UNCOMMENT LATER (commented for testing intake_angle_servo)
 
             telemetry.addData("Extension_Motor encoder value: ", armExtensionMotor.getCurrentPosition());
             telemetry.addData("Angle_Motor encoder value: ",  armAngleMotor.getCurrentPosition());
