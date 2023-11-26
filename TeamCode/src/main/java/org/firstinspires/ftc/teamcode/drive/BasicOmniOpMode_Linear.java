@@ -164,9 +164,9 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             double lateral =  gamepad1.left_stick_x;
             double yaw     =  gamepad1.right_stick_x;
             double hoistPower;
-            if (gamepad1.dpad_up) {
+            if (gamepad2.dpad_up) {
                 hoistServo.setPosition(0.0);
-            } else if (gamepad1.dpad_down) {
+            } else if (gamepad2.dpad_down) {
                 hoistServo.setPosition(1.0);
             } else {
                 //hoistPower = 0.5;
