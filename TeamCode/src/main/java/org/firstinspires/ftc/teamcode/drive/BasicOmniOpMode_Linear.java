@@ -154,7 +154,6 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         runtime.reset();
 
         // run until the end of the match (driver presses STOP)
-        double wristPosition = 1;
         long timeWristControlled = System.currentTimeMillis();
         while (opModeIsActive()) {
             double max;
@@ -193,13 +192,14 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 
 
             if (gamepad1.dpad_right) {
-                
+                wristServo.setPosition(0);
             } else if (gamepad1.dpad_left) {
-
+                wristServo.setPosition(1);
             } else {
-
+                wristServo.setPosition(wristServo.getPosition());
             }
 
+            //go to 1 when left trigger pressed?
 //            if (gamepad1.left_bumper && ((System.currentTimeMillis() - timeWristControlled) > 1000)) {
 //                //takes 3 seconds to go between positions
 //                //delay may need to be extended to prevent malfunction
