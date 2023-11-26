@@ -207,7 +207,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 //                wristPosition = (wristPosition == 1 ? 0 : 1);
 //                timeWristControlled = System.currentTimeMillis();
 //            }
-            wristServo.setPosition(wristPosition);
+            //wristServo.setPosition(wristPosition);
 
             if (gamepad1.a) {
                 bucketServo.setPosition(1);
