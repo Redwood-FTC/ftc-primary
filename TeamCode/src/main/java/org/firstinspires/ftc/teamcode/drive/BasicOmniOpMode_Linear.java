@@ -173,14 +173,14 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             }
             //hoistServo.setPosition(hoistPower);
 
-//            double winchPower;
-//            if (gamepad1.dpad_left) {
-//                winchPower = -1.0;
-//            } else if (gamepad1.dpad_right) {
-//                winchPower = 1.0;
-//            } else {
-//                winchPower = 0.0;
-//            } IMPORTANT: UNCOMMENT LATER (commented for testing intake_angle_servo)
+            double winchPower;
+            if (gamepad2.dpad_left) {
+                winchPower = -1.0;
+            } else if (gamepad2.dpad_right) {
+                winchPower = 1.0;
+            } else {
+                winchPower = 0.0;
+            }
 
             // Test code for intake_angle_servo
             // Remember to find correct values later
