@@ -29,16 +29,11 @@
 
 package org.firstinspires.ftc.teamcode.drive;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
-import org.checkerframework.checker.fenum.qual.SwingCompassDirection;
 
 import java.util.concurrent.TimeUnit;
 
@@ -79,7 +74,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
     private DcMotor leftBackDrive = null;
     private DcMotor rightFrontDrive = null;
     private DcMotor rightBackDrive = null;
-    private Servo hoistServo = null;
+    private Servo hookAngleServo = null;
     private Servo launchServo = null;
     private DcMotor winchMotor = null;
     private Servo wristServo = null;
@@ -102,7 +97,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front");
         rightBackDrive = hardwareMap.get(DcMotor.class, "right_back");
 
-        hoistServo = hardwareMap.get(Servo.class, "hoist_servo");
+        hookAngleServo = hardwareMap.get(Servo.class, "hook_angle_servo");
         launchServo = hardwareMap.get(Servo.class, "launch_servo");
         launchServo.setPosition(0.05);
         winchMotor = hardwareMap.get(DcMotor.class, "winch_motor");
@@ -156,6 +151,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         long timeWristControlled = System.currentTimeMillis();
+        double wristPosition = 1;
         while (opModeIsActive()) {
             double max;
 
@@ -163,15 +159,15 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             double axial   = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
             double lateral =  gamepad1.left_stick_x;
             double yaw     =  gamepad1.right_stick_x;
-            double hoistPower;
+            double hookAnglePower;
             if (gamepad2.dpad_up) {
-                hoistServo.setPosition(0.0);
+                hookAngleServo.setPosition(0.0);
             } else if (gamepad2.dpad_down) {
-                hoistServo.setPosition(1.0);
+                hookAngleServo.setPosition(1.0);
             } else {
-                //hoistPower = 0.5;
+                //hookAnglePower = 0.5;
             }
-            //hoistServo.setPosition(hoistPower);
+            //hookAngleServo.setPosition(hookAnglePower);
 
             double winchPower;
             if (gamepad2.dpad_left) {
@@ -193,13 +189,21 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             }
 
 
-            if (gamepad1.dpad_right) {
-                wristServo.setPosition(0);
-            } else if (gamepad1.dpad_left) {
+            if (gamepad1.dpad_right && (System.currentTimeMillis() - timeWristControlled > 200)) {
+//                if (wristPosition < 1) {
+//                    wristPosition += 0.1;
+//                }
                 wristServo.setPosition(1);
+            } else if (gamepad1.dpad_left && (System.currentTimeMillis() - timeWristControlled > 200)) {
+//                if (wristPosition > 0) {
+//                    wristPosition -= 0.1;
+//                }
+                wristServo.setPosition(0.8);
             } else {
-                wristServo.setPosition(wristServo.getPosition());
+                //wristServo.setPosition(1);
+                //theoretically nothing should happen
             }
+            //wristServo.setPosition(wristPosition);
 
             //go to 1 when left trigger pressed?
 //            if (gamepad1.left_bumper && ((System.currentTimeMillis() - timeWristControlled) > 1000)) {
@@ -209,17 +213,16 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 //                wristPosition = (wristPosition == 1 ? 0 : 1);
 //                timeWristControlled = System.currentTimeMillis();
 //            }
-            //wristServo.setPosition(wristPosition);
 
             if (gamepad1.a) {
-                bucketServo.setPosition(1);
-                intakeMotor.setPower(1);
+                bucketServo.setPosition(0.5);
+                intakeMotor.setPower(-1);
             } else if (gamepad1.b) {
                 bucketServo.setPosition(0);
-                intakeMotor.setPower(0);
+                intakeMotor.setPower(1);
             } else {
-                bucketServo.setPosition(0.5);
-                intakeMotor.setPower(0);
+                bucketServo.setPosition(1);
+                intakeMotor.setPower(1);
             }
 
             if (gamepad1.right_trigger > 0.05) {
@@ -284,8 +287,8 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             rightBackDrive.setPower(rightBackPower);
 
 //            long planeLaunched = -1;
-//            if (gamepad1.right_bumper){
-//                if (planeLaunched == -1) {
+//            if (gamepad2.right_bumper){
+//                if (planefed == -1) {
 //                    launchServo.setPosition(LAUNCH_SERVO_OPEN);
 //                    planeLaunched = System.currentTimeMillis();
 //                } //after plane is launched, same button moves the servo back
