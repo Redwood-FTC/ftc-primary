@@ -90,6 +90,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         double LAUNCH_SERVO_OPEN = 0.5;
         double LAUNCH_SERVO_CLOSED = 0.05;
 
+        /* Motor Initialization START */
         // Initialize the hardware variables. Note that the strings used here must correspond
         // to the names assigned during the robot configuration step on the DS or RC devices.
         leftFrontDrive  = hardwareMap.get(DcMotor.class, "left_front");
@@ -97,6 +98,25 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front");
         rightBackDrive = hardwareMap.get(DcMotor.class, "right_back");
 
+        leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
+        leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
+
+        armAngleMotor = hardwareMap.get(DcMotor.class, "arm_angle_motor");
+        armAngleMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        armExtensionMotor = hardwareMap.get(DcMotor.class, "arm_extension_motor");
+        armExtensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        armExtensionMotor.setPower(0);
+        armExtensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armExtensionMotor.setTargetPosition(0);
+        armExtensionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
+        intakeMotor.setPower(0);
+        /* Motor Initialization END */
+        /* Servo Initialization START */
         hookAngleServo = hardwareMap.get(Servo.class, "hook_angle_servo");
         launchServo = hardwareMap.get(Servo.class, "launch_servo");
         launchServo.setPosition(0.05);
@@ -111,36 +131,9 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         intakeAngleServo = hardwareMap.get(Servo.class, "intake_angle_servo");
         intakeAngleServo.setPosition(1);
 
-        armAngleMotor = hardwareMap.get(DcMotor.class, "arm_angle_motor");
-        armAngleMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        armExtensionMotor = hardwareMap.get(DcMotor.class, "arm_extension_motor");
-        armExtensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        armExtensionMotor.setPower(0);
-        armExtensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armExtensionMotor.setTargetPosition(0);
-        armExtensionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
-        intakeMotor.setPower(0);
-
         hookReleaseServo = hardwareMap.get(Servo.class, "hook_release_servo");
+        /* Servo Initialization END */
 
-
-        // ########################################################################################
-        // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
-        // ########################################################################################
-        // Most robots need the motors on one side to be reversed to drive forward.
-        // The motor reversals shown here are for a "direct drive" robot (the wheels turn the same direction as the motor shaft)
-        // If your robot has additional gear reductions or uses a right-angled drive, it's important to ensure
-        // that your motors are turning in the correct direction.  So, start out with the reversals here, BUT
-        // when you first test your robot, push the left joystick forward and observe the direction the wheels turn.
-        // Reverse the direction (flip FORWARD <-> REVERSE ) of any wheel that runs backward
-        // Keep testing until ALL the wheels move the robot forward when you push the left joystick forward.
-        leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
-        leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
 
         // Wait for the game to start (driver presses PLAY)
         telemetry.addData("Status", "Initialized");
@@ -242,6 +235,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             } else {
                 armAngleMotor.setPower(0.0);
             }
+
 
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
             // Set up a variable for each drive wheel to save the power level for telemetry.
