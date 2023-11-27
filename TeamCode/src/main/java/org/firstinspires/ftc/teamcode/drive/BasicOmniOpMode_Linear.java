@@ -120,6 +120,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         armAngleMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         armExtensionMotor = hardwareMap.get(DcMotor.class, "arm_extension_motor");
+        armExtensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         armExtensionMotor.setPower(0);
         armExtensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armExtensionMotor.setTargetPosition(0);
