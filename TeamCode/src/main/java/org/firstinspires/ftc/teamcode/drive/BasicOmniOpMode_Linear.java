@@ -185,8 +185,9 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             // Test code for intake_angle_servo
             // Remember to find correct values later
 
-
-            if (runtime.now(TimeUnit.MILLISECONDS) > 700) {
+            if (gamepad2.a) {
+                intakeAngleServo.setPosition(1);
+            } else if (runtime.now(TimeUnit.MILLISECONDS) > 700) {
                 intakeAngleServo.setPosition(0);
             }
 
