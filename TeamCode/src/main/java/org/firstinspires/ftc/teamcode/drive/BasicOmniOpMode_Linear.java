@@ -103,9 +103,6 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
 
-        armAngleMotor = hardwareMap.get(DcMotor.class, "arm_angle_motor");
-        armAngleMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
         armExtensionMotor = hardwareMap.get(DcMotor.class, "arm_extension_motor");
         armExtensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         armExtensionMotor.setPower(0);
