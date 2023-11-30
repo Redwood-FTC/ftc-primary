@@ -261,11 +261,11 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             if (gamepad1.x) {
                 //use extension test to reset position
                 //FIXXDX
-                armAngleMotor.setPower(-1.0);
+                //armAngleMotor.setPower(-1.0);
             } else if (gamepad1.y) {
-                armAngleMotor.setPower(1.0);
+                //armAngleMotor.setPower(1.0);
             } else {
-                armAngleMotor.setPower(0.0);
+                //armAngleMotor.setPower(0.0);
             }
 
 
