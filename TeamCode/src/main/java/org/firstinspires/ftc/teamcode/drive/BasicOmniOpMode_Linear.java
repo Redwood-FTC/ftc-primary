@@ -131,6 +131,23 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         intakeAngleServo = hardwareMap.get(Servo.class, "intake_angle_servo");
         intakeAngleServo.setPosition(1);
 
+        armAngleMotor = hardwareMap.get(DcMotor.class, "arm_angle_motor");
+        armAngleMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        armAngleMotor.setPower(0);
+        armAngleMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armAngleMotor.setTargetPosition(0);
+        armAngleMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        armExtensionMotor = hardwareMap.get(DcMotor.class, "arm_extension_motor");
+        armExtensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        armExtensionMotor.setPower(0);
+        armExtensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armExtensionMotor.setTargetPosition(0);
+        armExtensionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
+        intakeMotor.setPower(0);
+
         hookReleaseServo = hardwareMap.get(Servo.class, "hook_release_servo");
         /* Servo Initialization END */
 
@@ -228,7 +245,25 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
                 armExtensionMotor.setPower(0);
             }
 
+//            if (gamepad1.right_trigger > 0.05) {
+//                //drop mode
+//            } else if (gamepad1.left_trigger > 0.05) {
+//                //input mode
+//            } else {
+//                //nothing
+//            }
+
+            if (gamepad1.dpad_up) {
+                armAngleMotor.setTargetPosition(7400);
+            } else if (gamepad1.dpad_down) {
+                armAngleMotor.setTargetPosition(0);
+            } else {
+
+            }
+
             if (gamepad1.x) {
+                //use extension test to reset position
+                //FIXXDX
                 armAngleMotor.setPower(-1.0);
             } else if (gamepad1.y) {
                 armAngleMotor.setPower(1.0);
