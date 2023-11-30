@@ -127,8 +127,10 @@ public class PositionSetter extends LinearOpMode {
                 armExtensionMotor.setPower(0);
             }
 
-            telemetry.addData("amount_tilt", armAngleMotor.getCurrentPosition());
+           telemetry.addData("amount_tilted", armAngleMotor.getCurrentPosition());
            telemetry.addData("amount_extended", extensionMotor.getCurrentPosition());
+           telemetry.addData("amount_arm_extended", armExtensionMotor.getCurrentPosition());
+           telemetry.addData("winch_motor_encoder", winchMotor.getCurrentPosition());
            telemetry.update();
         }
     }
