@@ -115,13 +115,16 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         /* Motor Initialization END */
         /* Servo Initialization START */
         hookAngleServo = hardwareMap.get(Servo.class, "hook_angle_servo");
+
         launchServo = hardwareMap.get(Servo.class, "launch_servo");
         launchServo.setPosition(0.05);
+
         winchMotor = hardwareMap.get(DcMotor.class, "winch_motor");
         winchMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         wristServo = hardwareMap.get(Servo.class, "wrist_servo");
         wristServo.setPosition(1);
+
         bucketServo = hardwareMap.get(Servo.class, "bucket_servo");
         bucketServo.setPosition(0.5);
 

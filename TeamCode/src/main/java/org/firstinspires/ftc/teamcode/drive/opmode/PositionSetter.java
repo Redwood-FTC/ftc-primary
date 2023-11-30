@@ -55,6 +55,8 @@ public class PositionSetter extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor extensionMotor = null;
     private DcMotor armAngleMotor = null;
+    private DcMotor winchMotor = null;
+    private DcMotor armExtensionMotor = null;
 
     @Override
     public void runOpMode() {
@@ -65,7 +67,22 @@ public class PositionSetter extends LinearOpMode {
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
         extensionMotor = hardwareMap.get(DcMotor.class, "arm_extension_motor");
+
         armAngleMotor = hardwareMap.get(DcMotor.class, "arm_angle_motor");
+        armAngleMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        armAngleMotor.setPower(0);
+        armAngleMotor.setTargetPosition(0);
+
+        armExtensionMotor = hardwareMap.get(DcMotor.class, "arm_extension_motor");
+        armExtensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        armExtensionMotor.setPower(0);
+        armExtensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armExtensionMotor.setTargetPosition(0);
+        armExtensionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        winchMotor = hardwareMap.get(DcMotor.class, "winch_motor");
+        winchMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
         extensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armAngleMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         extensionMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -88,6 +105,26 @@ public class PositionSetter extends LinearOpMode {
                 armAngleMotor.setPower(1.0);
             } else {
                 armAngleMotor.setPower(0.0);
+            }
+
+            double winchPower;
+            if (gamepad2.dpad_left) {
+                winchPower = -1.0;
+            } else if (gamepad2.dpad_right) {
+                winchPower = 1.0;
+            } else {
+                winchPower = 0.0;
+            }
+            winchMotor.setPower(winchPower);
+
+            if (gamepad1.right_trigger > 0.05) {
+                armExtensionMotor.setTargetPosition(-2100);
+                armExtensionMotor.setPower(gamepad1.right_trigger);
+            } else if (gamepad1.left_trigger > 0.05) {
+                armExtensionMotor.setPower(gamepad1.left_trigger);
+                armExtensionMotor.setTargetPosition(0);
+            } else {
+                armExtensionMotor.setPower(0);
             }
 
             telemetry.addData("amount_tilt", armAngleMotor.getCurrentPosition());
