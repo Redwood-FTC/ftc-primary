@@ -54,6 +54,7 @@ public class ExtensionMotorTest extends LinearOpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor extensionMotor = null;
+    private DcMotor armAngleMotor = null;
 
     @Override
     public void runOpMode() {
@@ -63,7 +64,12 @@ public class ExtensionMotorTest extends LinearOpMode {
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
-        extensionMotor  = hardwareMap.get(DcMotor.class, "arm_extension_motor");
+        extensionMotor = hardwareMap.get(DcMotor.class, "arm_extension_motor");
+        armAngleMotor = hardwareMap.get(DcMotor.class, "arm_angle_motor");
+        extensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armAngleMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        extensionMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        armAngleMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
@@ -76,6 +82,15 @@ public class ExtensionMotorTest extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
+            if (gamepad1.x) {
+                armAngleMotor.setPower(-1.0);
+            } else if (gamepad1.y) {
+                armAngleMotor.setPower(1.0);
+            } else {
+                armAngleMotor.setPower(0.0);
+            }
+
+            telemetry.addData("amount_tilt", armAngleMotor.getCurrentPosition());
            telemetry.addData("amount_extended", extensionMotor.getCurrentPosition());
            telemetry.update();
         }
