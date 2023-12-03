@@ -140,7 +140,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 
         armExtensionMotor = hardwareMap.get(DcMotor.class, "arm_extension_motor");
         armExtensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        armExtensionMotor.setPower(0);
+        armExtensionMotor.setPower(0.4); //controlled automatically, fine tuning not needed
         armExtensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armExtensionMotor.setTargetPosition(0);
         armExtensionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -162,6 +162,8 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         long timeWristControlled = System.currentTimeMillis();
         double wristPosition = 1;
+        boolean pixelDropMode = false;
+        long timePixelModeChanged = System.currentTimeMillis();
         while (opModeIsActive()) {
             double max;
 
@@ -191,13 +193,13 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 
             // Test code for intake_angle_servo
             // Remember to find correct values later
-
             if (gamepad2.a) {
                 intakeAngleServo.setPosition(1);
             } else if (runtime.now(TimeUnit.MILLISECONDS) > 700) {
                 intakeAngleServo.setPosition(0);
-            }
 
+            // Test code for intake_angle_servo
+            // Remember to find correct values later
 
             if (gamepad1.dpad_right && (System.currentTimeMillis() - timeWristControlled > 200)) {
 //                if (wristPosition < 1) {
@@ -208,7 +210,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 //                if (wristPosition > 0) {
 //                    wristPosition -= 0.1;
 //                }
-                wristServo.setPosition(0.8);
+                wristServo.setPosition(0.76); //WAS 0.8
             } else {
                 //wristServo.setPosition(1);
                 //theoretically nothing should happen
@@ -232,34 +234,59 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
                 intakeMotor.setPower(1);
             } else {
                 bucketServo.setPosition(1);
-                intakeMotor.setPower(1);
-            }
-
-            if (gamepad1.right_trigger > 0.05) {
-                armExtensionMotor.setTargetPosition(-2100);
-                armExtensionMotor.setPower(gamepad1.right_trigger);
-            } else if (gamepad1.left_trigger > 0.05) {
-                armExtensionMotor.setPower(gamepad1.left_trigger);
-                armExtensionMotor.setTargetPosition(0);
-            } else {
-                armExtensionMotor.setPower(0);
+                intakeMotor.setPower(1); //TEMPORARY TO STOP LOUD NOISE
+                //intakeMotor.setPower(1);
             }
 
 //            if (gamepad1.right_trigger > 0.05) {
-//                //drop mode
+//                armExtensionMotor.setTargetPosition(-2100);
+//                armExtensionMotor.setPower(gamepad1.right_trigger);
 //            } else if (gamepad1.left_trigger > 0.05) {
-//                //input mode
+//                armExtensionMotor.setPower(gamepad1.left_trigger);
+//                armExtensionMotor.setTargetPosition(0);
 //            } else {
-//                //nothing
+//                armExtensionMotor.setPower(0);
 //            }
 
-            if (gamepad1.dpad_up) {
-                armAngleMotor.setTargetPosition(7400);
-            } else if (gamepad1.dpad_down) {
-                armAngleMotor.setTargetPosition(0);
-            } else {
-
+            if (gamepad1.right_trigger > 0.05) {
+                pixelDropMode = true;
+                timePixelModeChanged = System.currentTimeMillis();
+                //time set
+            } else if (gamepad1.left_trigger > 0.05) {
+                pixelDropMode = false;
+                timePixelModeChanged = System.currentTimeMillis();
+                //input mode
+                //same in reverse
             }
+
+            if (pixelDropMode) { //SET POWER FOR ALL 3
+                //begin raising armanglemotor
+                armAngleMotor.setTargetPosition(7200);
+                if ((System.currentTimeMillis() - timePixelModeChanged) > 1000) {
+                    wristServo.setPosition(0.76);
+                } //seperate if to allow separate tuning
+                if ((System.currentTimeMillis() - timePixelModeChanged) > 1000) {
+                    armExtensionMotor.setTargetPosition(-2000); //was -2100
+                }
+
+                //put out armextensionmotor after 200-ish mils
+                //move wristservo same time
+            } else if (!pixelDropMode) {
+                armAngleMotor.setTargetPosition(0);
+                armExtensionMotor.setTargetPosition(0);
+                wristServo.setPosition(1.0);
+            }
+
+
+            armAngleMotor.setPower(1.0); //TEMPORARY -- WILL BE MOVED TO SETUP SECTION LATER
+
+//            if (gamepad1.dpad_up) {
+//                armAngleMotor.setTargetPosition(7200); //was 7400
+//            } else if (gamepad1.dpad_down) {
+//                armAngleMotor.setTargetPosition(0);
+//            } else {
+//
+//            }
 
             if (gamepad1.x) {
                 //use extension test to reset position
@@ -321,3 +348,4 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         }
     }
 }
+} //this threw an error without this
