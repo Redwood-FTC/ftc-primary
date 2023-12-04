@@ -201,6 +201,10 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             // Test code for intake_angle_servo
             // Remember to find correct values later
 
+            if (gamepad2.b) {
+                hookReleaseServo.setPosition((hookReleaseServo.getPosition() == 0) ? 1 : 0);
+            }
+
             if (gamepad1.dpad_right && (System.currentTimeMillis() - timeWristControlled > 200)) {
 //                if (wristPosition < 1) {
 //                    wristPosition += 0.1;
