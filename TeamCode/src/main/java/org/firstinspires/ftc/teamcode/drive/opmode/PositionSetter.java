@@ -99,6 +99,8 @@ public class PositionSetter extends LinearOpMode {
 
         double hookReleasePosition = 0.5;
         double hookReleaseSpeed = 0.01;
+        int HOOK_RELEASE_SERVO_OPEN = 1;
+        int HOOK_RELEASE_SERVO_CLOSED = 0;
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -133,14 +135,12 @@ public class PositionSetter extends LinearOpMode {
             } else {
                 armExtensionMotor.setPower(0);
             }
-
-            // Doesn't make the hookReleaseServo move (most likely not a code issue)
+            
             if (gamepad2.left_bumper) {
-                hookReleasePosition += hookReleaseSpeed;
+                hookReleaseServo.setPosition(0);
             } else if (gamepad2.right_bumper) {
-                hookReleasePosition -= hookReleaseSpeed;
+                hookReleaseServo.setPosition(1);
             }
-            hookReleaseServo.setPosition(hookReleasePosition);
 
             telemetry.addData("hookReleasePosition", hookReleaseServo.getPosition());
             telemetry.addData("amount_tilted", armAngleMotor.getCurrentPosition());
