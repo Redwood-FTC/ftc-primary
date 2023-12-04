@@ -134,20 +134,20 @@ public class PositionSetter extends LinearOpMode {
                 armExtensionMotor.setPower(0);
             }
 
+            // Doesn't make the hookReleaseServo move (most likely not a code issue)
             if (gamepad2.left_bumper) {
                 hookReleasePosition += hookReleaseSpeed;
-            } else if (gamepad2.right_bumper){
+            } else if (gamepad2.right_bumper) {
                 hookReleasePosition -= hookReleaseSpeed;
             }
             hookReleaseServo.setPosition(hookReleasePosition);
 
             telemetry.addData("hookReleasePosition", hookReleaseServo.getPosition());
-
-           telemetry.addData("amount_tilted", armAngleMotor.getCurrentPosition());
-           telemetry.addData("amount_arm_extended", armExtensionMotor.getCurrentPosition());
-           telemetry.addData("amount_extended", extensionMotor.getCurrentPosition());
-           telemetry.addData("Winch_Motor_encoder value", winchMotor.getCurrentPosition());
-           telemetry.update();
+            telemetry.addData("amount_tilted", armAngleMotor.getCurrentPosition());
+            telemetry.addData("amount_arm_extended", armExtensionMotor.getCurrentPosition());
+            telemetry.addData("amount_extended", extensionMotor.getCurrentPosition());
+            telemetry.addData("Winch_Motor_encoder value", winchMotor.getCurrentPosition());
+            telemetry.update();
         }
     }
 }
