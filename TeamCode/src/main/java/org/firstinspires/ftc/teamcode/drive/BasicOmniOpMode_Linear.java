@@ -342,7 +342,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             telemetry.addData("Angle_Intake_Servo encoder value: ", intakeAngleServo.getPosition());
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
-            telemetry.addData("Back  left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
+            telemetry.addData("Back left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
             telemetry.update();
             //check if opmode not active, then wait while we close the intake angle servo
         }

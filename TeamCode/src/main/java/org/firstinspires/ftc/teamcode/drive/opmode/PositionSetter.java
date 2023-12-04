@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode.drive.opmode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
@@ -57,6 +58,7 @@ public class PositionSetter extends LinearOpMode {
     private DcMotor armAngleMotor = null;
     private DcMotor winchMotor = null;
     private DcMotor armExtensionMotor = null;
+    private Servo hookReleaseServo = null;
 
     @Override
     public void runOpMode() {
@@ -88,10 +90,15 @@ public class PositionSetter extends LinearOpMode {
         extensionMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         armAngleMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+        hookReleaseServo = hardwareMap.get(Servo.class, "hook_release_servo");
+
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
         extensionMotor.setDirection(DcMotor.Direction.REVERSE);
+
+        double hookReleasePosition = 0.5;
+        double hookReleaseSpeed = 0.01;
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -126,6 +133,15 @@ public class PositionSetter extends LinearOpMode {
             } else {
                 armExtensionMotor.setPower(0);
             }
+
+            if (gamepad2.left_bumper) {
+                hookReleasePosition += hookReleaseSpeed;
+            } else if (gamepad2.right_bumper){
+                hookReleasePosition -= hookReleaseSpeed;
+            }
+            hookReleaseServo.setPosition(hookReleasePosition);
+
+            telemetry.addData("hookReleasePosition", hookReleaseServo.getPosition());
 
            telemetry.addData("amount_tilted", armAngleMotor.getCurrentPosition());
            telemetry.addData("amount_arm_extended", armExtensionMotor.getCurrentPosition());
