@@ -227,7 +227,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 //            }
 
             if (gamepad1.a) {
-                bucketServo.setPosition(0.5);
+                bucketServo.setPosition(1);
                 intakeMotor.setPower(-1);
             } else if (gamepad1.b) {
                 bucketServo.setPosition(0);
