@@ -37,43 +37,14 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import java.util.concurrent.TimeUnit;
 
-/**
- * This file contains an example of a Linear "OpMode".
- * An OpMode is a 'program' that runs in either the autonomous or the teleop period of an FTC match.
- * The names of OpModes appear on the menu of the FTC Driver Station.
- * When a selection is made from the menu, the corresponding OpMode is executed.
- *
- * This particular OpMode illustrates driving a 4-motor Omni-Directional (or Holonomic) robot.
- * This code will work with either a Mecanum-Drive or an X-Drive train.
- * Both of these drives are illustrated at https://gm0.org/en/latest/docs/robot-design/drivetrains/holonomic.html
- * Note that a Mecanum drive must display an X roller-pattern when viewed from above.
- *
- * Also note that it is critical to set the correct rotation direction for each motor.  See details below.
- *
- * Holonomic drives provide the ability for the robot to move in three axes (directions) simultaneously.
- * Each motion axis is controlled by one Joystick axis.
- *
- * 1) Axial:    Driving forward and backward               Left-joystick Forward/Backward
- * 2) Lateral:  Strafing right and left                     Left-joystick Right and Left
- * 3) Yaw:      Rotating Clockwise and counter clockwise    Right-joystick Right and Left
- *
- * This code is written assuming that the right-side motors need to be reversed for the robot to drive forward.
- * When you first test your robot, if it moves backward when you push the left stick forward, then you must flip
- * the direction of all 4 motors (see code below).
- *
- * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
- */
-
 /*
-    If changes are made in this file, apply the same changes to RohansOpMode, but do not re-add
-    pressing a button to make the pixel arm go to a set position in order to drop a pixel on the
-    backboard (changes made to making the pixel arm go back to loading position should be added to
-    RohansOpMode.
+    This OpMode was made to accommodate Rohan's preferences regarding pressing a button to set the
+    pixel arm to a set position when placing pixels on the backboard. He would rather have it be
+    manual for more flexibility.
 */
 
-@TeleOp(name="Basic: Omni Linear OpMode", group="Linear Opmode")
-public class BasicOmniOpMode_Linear extends LinearOpMode {
+@TeleOp(name="Rohan's OpMode", group="Linear Opmode")
+public class RohansOpMode extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors.
     private ElapsedTime runtime = new ElapsedTime();
@@ -141,7 +112,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 
         armAngleMotor = hardwareMap.get(DcMotor.class, "arm_angle_motor");
         armAngleMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        armAngleMotor.setPower(0);
+        armAngleMotor.setPower(1);
         armAngleMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armAngleMotor.setTargetPosition(0);
         armAngleMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -171,6 +142,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         long timeWristControlled = System.currentTimeMillis();
         double wristPosition = 1;
+        int armAngleMotorPosition = 0;
         boolean pixelDropMode = false;
         long timePixelModeChanged = System.currentTimeMillis();
         while (opModeIsActive()) {
@@ -207,30 +179,30 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             } else if (runtime.now(TimeUnit.MILLISECONDS) > 700) {
                 intakeAngleServo.setPosition(0);
 
-            // Test code for intake_angle_servo
-            // Remember to find correct values later
+                // Test code for intake_angle_servo
+                // Remember to find correct values later
 
-            if (gamepad2.b) {
-                hookReleaseServo.setPosition(0);
-            }
+                if (gamepad2.b) {
+                    hookReleaseServo.setPosition(0);
+                }
 
-            if (gamepad1.dpad_right && (System.currentTimeMillis() - timeWristControlled > 200)) {
+                if (gamepad1.dpad_right && (System.currentTimeMillis() - timeWristControlled > 200)) {
 //                if (wristPosition < 1) {
 //                    wristPosition += 0.1;
 //                }
-                wristServo.setPosition(1);
-            } else if (gamepad1.dpad_left && (System.currentTimeMillis() - timeWristControlled > 200)) {
+                    wristServo.setPosition(1);
+                } else if (gamepad1.dpad_left && (System.currentTimeMillis() - timeWristControlled > 200)) {
 //                if (wristPosition > 0) {
 //                    wristPosition -= 0.1;
 //                }
-                wristServo.setPosition(0.76); //WAS 0.8
-            } else {
-                //wristServo.setPosition(1);
-                //theoretically nothing should happen
-            }
-            //wristServo.setPosition(wristPosition);
+                    wristServo.setPosition(0.76); //WAS 0.8
+                } else {
+                    //wristServo.setPosition(1);
+                    //theoretically nothing should happen
+                }
+                //wristServo.setPosition(wristPosition);
 
-            //go to 1 when left trigger pressed?
+                //go to 1 when left trigger pressed?
 //            if (gamepad1.left_bumper && ((System.currentTimeMillis() - timeWristControlled) > 1000)) {
 //                //takes 3 seconds to go between positions
 //                //delay may need to be extended to prevent malfunction
@@ -239,17 +211,17 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 //                timeWristControlled = System.currentTimeMillis();
 //            }
 
-            if (gamepad1.a) {
-                bucketServo.setPosition(1);
-                intakeMotor.setPower(-1);
-            } else if (gamepad1.b) {
-                bucketServo.setPosition(0);
-                intakeMotor.setPower(1);
-            } else {
-                bucketServo.setPosition(1);
-                intakeMotor.setPower(1); //TEMPORARY TO STOP LOUD NOISE
-                //intakeMotor.setPower(1);
-            }
+                if (gamepad1.a) {
+                    bucketServo.setPosition(1);
+                    intakeMotor.setPower(-1);
+                } else if (gamepad1.b) {
+                    bucketServo.setPosition(0);
+                    intakeMotor.setPower(1);
+                } else {
+                    bucketServo.setPosition(1);
+                    intakeMotor.setPower(1); //TEMPORARY TO STOP LOUD NOISE
+                    //intakeMotor.setPower(1);
+                }
 
 //            if (gamepad1.right_trigger > 0.05) {
 //                armExtensionMotor.setTargetPosition(-2100);
@@ -261,37 +233,41 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 //                armExtensionMotor.setPower(0);
 //            }
 
-            if (gamepad1.right_trigger > 0.05) {
-                pixelDropMode = true;
-                timePixelModeChanged = System.currentTimeMillis();
-                //time set
-            } else if (gamepad1.left_trigger > 0.05) {
-                pixelDropMode = false;
-                timePixelModeChanged = System.currentTimeMillis();
-                //input mode
-                //same in reverse
-            }
-
-            if (pixelDropMode) { //SET POWER FOR ALL 3
-                //begin raising armanglemotor
-                armAngleMotor.setTargetPosition(7200);
-                if ((System.currentTimeMillis() - timePixelModeChanged) > 1000) {
-                    wristServo.setPosition(0.76);
-                } //seperate if to allow separate tuning
-                if ((System.currentTimeMillis() - timePixelModeChanged) > 1000) {
-                    armExtensionMotor.setTargetPosition(-2000); //was -2100
+                if (gamepad1.right_trigger > 0.05) {
+                    pixelDropMode = true;
+                    timePixelModeChanged = System.currentTimeMillis();
+                    //time set
+                } else if (gamepad1.left_trigger > 0.05) {
+                    pixelDropMode = false;
+                    timePixelModeChanged = System.currentTimeMillis();
+                    //input mode
+                    //same in reverse
                 }
 
-                //put out armextensionmotor after 200-ish mils
-                //move wristservo same time
-            } else if (!pixelDropMode) {
-                armAngleMotor.setTargetPosition(0);
-                armExtensionMotor.setTargetPosition(0);
-                wristServo.setPosition(1.0);
-            }
+                if (pixelDropMode) { //SET POWER FOR ALL 3
+//                    armAngleMotor.setTargetPosition(7200);
+                    if ((System.currentTimeMillis() - timePixelModeChanged) > 1000) {
+                        wristServo.setPosition(0.76);
+                    } //seperate if to allow separate tuning
+                    if ((System.currentTimeMillis() - timePixelModeChanged) > 1000) {
+                        armExtensionMotor.setTargetPosition(-2000); //was -2100
+                    }
+                    //put out armextensionmotor after 200-ish mils
+                    //move wristservo same time
+                } else if (!pixelDropMode) {
+//                    armAngleMotor.setTargetPosition(0);
+                    armExtensionMotor.setTargetPosition(0);
+                    wristServo.setPosition(1.0);
+                }
 
+                if (gamepad1.dpad_up) {
+                    armAngleMotorPosition += 1;
+                } else if (gamepad1.dpad_down) {
+                    armAngleMotorPosition -= 1;
+                }
+                armAngleMotorPosition = Math.min(Math.max(0, armAngleMotorPosition), 7200);
 
-            armAngleMotor.setPower(1.0); //TEMPORARY -- WILL BE MOVED TO SETUP SECTION LATER
+                armAngleMotor.setTargetPosition(armAngleMotorPosition);
 
 //            if (gamepad1.dpad_up) {
 //                armAngleMotor.setTargetPosition(7200); //was 7400
@@ -301,42 +277,42 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 //
 //            }
 
-            if (gamepad1.x) {
-                //use extension test to reset position
-                //FIXXDX
-                //armAngleMotor.setPower(-1.0);
-            } else if (gamepad1.y) {
-                //armAngleMotor.setPower(1.0);
-            } else {
-                //armAngleMotor.setPower(0.0);
-            }
+                if (gamepad1.x) {
+                    //use extension test to reset position
+                    //FIXXDX
+                    //armAngleMotor.setPower(-1.0);
+                } else if (gamepad1.y) {
+                    //armAngleMotor.setPower(1.0);
+                } else {
+                    //armAngleMotor.setPower(0.0);
+                }
 
 
-            // Combine the joystick requests for each axis-motion to determine each wheel's power.
-            // Set up a variable for each drive wheel to save the power level for telemetry.
-            double leftFrontPower  = axial + lateral + yaw;
-            double rightFrontPower = axial - lateral - yaw;
-            double leftBackPower   = axial - lateral + yaw;
-            double rightBackPower  = axial + lateral - yaw;
+                // Combine the joystick requests for each axis-motion to determine each wheel's power.
+                // Set up a variable for each drive wheel to save the power level for telemetry.
+                double leftFrontPower  = axial + lateral + yaw;
+                double rightFrontPower = axial - lateral - yaw;
+                double leftBackPower   = axial - lateral + yaw;
+                double rightBackPower  = axial + lateral - yaw;
 
-            // Normalize the values so no wheel power exceeds 100%
-            // This ensures that the robot maintains the desired motion.
-            max = Math.max(Math.abs(leftFrontPower), Math.abs(rightFrontPower));
-            max = Math.max(max, Math.abs(leftBackPower));
-            max = Math.max(max, Math.abs(rightBackPower));
+                // Normalize the values so no wheel power exceeds 100%
+                // This ensures that the robot maintains the desired motion.
+                max = Math.max(Math.abs(leftFrontPower), Math.abs(rightFrontPower));
+                max = Math.max(max, Math.abs(leftBackPower));
+                max = Math.max(max, Math.abs(rightBackPower));
 
-            if (max > 1.0) {
-                leftFrontPower /= max;
-                rightFrontPower /= max;
-                leftBackPower /= max;
-                rightBackPower /= max;
-            }
+                if (max > 1.0) {
+                    leftFrontPower /= max;
+                    rightFrontPower /= max;
+                    leftBackPower /= max;
+                    rightBackPower /= max;
+                }
 
-            // Send calculated power to wheels
-            leftFrontDrive.setPower(leftFrontPower);
-            rightFrontDrive.setPower(rightFrontPower);
-            leftBackDrive.setPower(leftBackPower);
-            rightBackDrive.setPower(rightBackPower);
+                // Send calculated power to wheels
+                leftFrontDrive.setPower(leftFrontPower);
+                rightFrontDrive.setPower(rightFrontPower);
+                leftBackDrive.setPower(leftBackPower);
+                rightBackDrive.setPower(rightBackPower);
 
 //            long planeLaunched = -1;
 //            if (gamepad2.right_bumper){
@@ -350,15 +326,15 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 //            }
 //
 
-            telemetry.addData("Extension_Motor encoder value: ", armExtensionMotor.getCurrentPosition());
-            telemetry.addData("Angle_Motor encoder value: ",  armAngleMotor.getCurrentPosition());
-            telemetry.addData("Angle_Intake_Servo encoder value: ", intakeAngleServo.getPosition());
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
-            telemetry.addData("Back left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
-            telemetry.update();
-            //check if opmode not active, then wait while we close the intake angle servo
+                telemetry.addData("Extension_Motor encoder value: ", armExtensionMotor.getCurrentPosition());
+                telemetry.addData("Angle_Motor encoder value: ",  armAngleMotor.getCurrentPosition());
+                telemetry.addData("Angle_Intake_Servo encoder value: ", intakeAngleServo.getPosition());
+                telemetry.addData("Status", "Run Time: " + runtime.toString());
+                telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
+                telemetry.addData("Back left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
+                telemetry.update();
+                //check if opmode not active, then wait while we close the intake angle servo
+            }
         }
     }
 }
-} //this threw an error without this
