@@ -37,16 +37,13 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import java.util.concurrent.TimeUnit;
 
+@TeleOp(name="Ayansh's OpMode", group="Linear Opmode")
+public class AyanshsOpMode extends LinearOpMode {
+
 /*
-    This OpMode was made to accommodate Rohan's preferences regarding pressing a button to set the
-    pixel arm to a set position when placing pixels on the backboard. He would rather have it be
-    manual for more flexibility.
+    This OpMode was made for Ayansh because he wanted his own OpMode for his own control scheme.
 */
 
-@TeleOp(name="Rohan's OpMode", group="Linear Opmode")
-public class RohansOpMode extends LinearOpMode {
-
-    // Declare OpMode members for each of the 4 motors.
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftFrontDrive = null;
     private DcMotor leftBackDrive = null;
@@ -142,7 +139,6 @@ public class RohansOpMode extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         long timeWristControlled = System.currentTimeMillis();
         double wristPosition = 1;
-        int armAngleMotorPosition = 0;
         boolean pixelDropMode = false;
         long timePixelModeChanged = System.currentTimeMillis();
         while (opModeIsActive()) {
@@ -233,11 +229,11 @@ public class RohansOpMode extends LinearOpMode {
 //                armExtensionMotor.setPower(0);
 //            }
 
-                if (gamepad1.right_trigger > 0.05) {
+                if (gamepad1.dpad_up) {
                     pixelDropMode = true;
                     timePixelModeChanged = System.currentTimeMillis();
                     //time set
-                } else if (gamepad1.left_trigger > 0.05) {
+                } else if (gamepad1.dpad_down) {
                     pixelDropMode = false;
                     timePixelModeChanged = System.currentTimeMillis();
                     //input mode
@@ -245,29 +241,22 @@ public class RohansOpMode extends LinearOpMode {
                 }
 
                 if (pixelDropMode) { //SET POWER FOR ALL 3
-//                    armAngleMotor.setTargetPosition(7200);
+                    //begin raising armanglemotor
+                    armAngleMotor.setTargetPosition(7200);
                     if ((System.currentTimeMillis() - timePixelModeChanged) > 1000) {
                         wristServo.setPosition(0.76);
                     } //seperate if to allow separate tuning
                     if ((System.currentTimeMillis() - timePixelModeChanged) > 1000) {
                         armExtensionMotor.setTargetPosition(-2000); //was -2100
                     }
+
                     //put out armextensionmotor after 200-ish mils
                     //move wristservo same time
                 } else if (!pixelDropMode) {
-//                    armAngleMotor.setTargetPosition(0);
+                    armAngleMotor.setTargetPosition(0);
                     armExtensionMotor.setTargetPosition(0);
                     wristServo.setPosition(1.0);
                 }
-
-                if (gamepad1.dpad_up) {
-                    armAngleMotorPosition += 1;
-                } else if (gamepad1.dpad_down) {
-                    armAngleMotorPosition -= 1;
-                }
-                armAngleMotorPosition = Math.min(Math.max(0, armAngleMotorPosition), 7200);
-
-                armAngleMotor.setTargetPosition(armAngleMotorPosition);
 
 //            if (gamepad1.dpad_up) {
 //                armAngleMotor.setTargetPosition(7200); //was 7400
@@ -315,7 +304,7 @@ public class RohansOpMode extends LinearOpMode {
                 rightBackDrive.setPower(rightBackPower);
 
 //            long planeLaunched = -1;
-//            if (gamepad2.right_bumper){
+//            if (gamepad2.left_trigger){
 //                if (planefed == -1) {
 //                    launchServo.setPosition(LAUNCH_SERVO_OPEN);
 //                    planeLaunched = System.currentTimeMillis();
@@ -337,4 +326,4 @@ public class RohansOpMode extends LinearOpMode {
             }
         }
     }
-}
+} //this threw an error without this

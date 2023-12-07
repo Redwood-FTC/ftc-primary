@@ -69,7 +69,11 @@ import java.util.concurrent.TimeUnit;
     If changes are made in this file, apply the same changes to RohansOpMode, but do not re-add
     pressing a button to make the pixel arm go to a set position in order to drop a pixel on the
     backboard (changes made to making the pixel arm go back to loading position should be added to
-    RohansOpMode.
+    RohansOpMode). If any added changes to this OpMode conflict with the changes in RohansOpMode,
+    check with either Milo or Rohan about them.
+
+    Also add these changes to AyanshsOpMode (make sure that any changes added don't conflict with
+    AyanshsOpMode, but if they do, check with either Milo or Ayansh about it).
 */
 
 @TeleOp(name="Basic: Omni Linear OpMode", group="Linear Opmode")
@@ -117,6 +121,23 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         armExtensionMotor.setTargetPosition(0);
         armExtensionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
+        armAngleMotor = hardwareMap.get(DcMotor.class, "arm_angle_motor");
+        armAngleMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        armAngleMotor.setPower(0);
+        armAngleMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armAngleMotor.setTargetPosition(0);
+        armAngleMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        armExtensionMotor = hardwareMap.get(DcMotor.class, "arm_extension_motor");
+        armExtensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        armExtensionMotor.setPower(0.4); //controlled automatically, fine tuning not needed
+        armExtensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armExtensionMotor.setTargetPosition(0);
+        armExtensionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
+        intakeMotor.setPower(0);
+
         intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
         intakeMotor.setPower(0);
         /* Motor Initialization END */
@@ -138,23 +159,6 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 
         intakeAngleServo = hardwareMap.get(Servo.class, "intake_angle_servo");
         intakeAngleServo.setPosition(1);
-
-        armAngleMotor = hardwareMap.get(DcMotor.class, "arm_angle_motor");
-        armAngleMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        armAngleMotor.setPower(0);
-        armAngleMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armAngleMotor.setTargetPosition(0);
-        armAngleMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        armExtensionMotor = hardwareMap.get(DcMotor.class, "arm_extension_motor");
-        armExtensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        armExtensionMotor.setPower(0.4); //controlled automatically, fine tuning not needed
-        armExtensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armExtensionMotor.setTargetPosition(0);
-        armExtensionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
-        intakeMotor.setPower(0);
 
         hookReleaseServo = hardwareMap.get(Servo.class, "hook_release_servo");
         hookReleaseServo.setPosition(1);
