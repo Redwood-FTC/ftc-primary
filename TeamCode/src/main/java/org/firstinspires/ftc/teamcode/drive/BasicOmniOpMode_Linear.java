@@ -87,8 +87,8 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        double LAUNCH_SERVO_OPEN = 0.5;
-        double LAUNCH_SERVO_CLOSED = 0.05;
+        //double LAUNCH_SERVO_OPEN = 0.5;
+        //double LAUNCH_SERVO_CLOSED = 0.05;
 
         /* Motor Initialization START */
         // Initialize the hardware variables. Note that the strings used here must correspond
@@ -115,7 +115,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         /* Motor Initialization END */
         /* Servo Initialization START */
         hookAngleServo = hardwareMap.get(Servo.class, "hook_angle_servo");
-        hookAngleServo.setPosition(0.2);
+        hookAngleServo.setPosition(0.77); //was .2
 
         launchServo = hardwareMap.get(Servo.class, "launch_servo");
         launchServo.setPosition(0.05);
@@ -175,11 +175,13 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             double yaw     =  gamepad1.right_stick_x;
             double hookAnglePower;
             if (gamepad2.dpad_up) {
-                hookAngleServo.setPosition(1.0); //go to hook (TEMP VALUE)
+                hookAngleServo.setPosition(0.17); //go to hook (TEMP VALUE)
             } else if (gamepad2.dpad_down) {
-                hookAngleServo.setPosition(0.7); //go to plane (TEMP VALUE)
+                hookAngleServo.setPosition(0.65); //go to plane (TEMP VALUE)
             } else if (gamepad2.y) {
                 hookAngleServo.setPosition(0.0);
+            } else if (gamepad2.x) {
+                hookAngleServo.setPosition(0.9);
             }
             //hookAngleServo.setPosition(hookAnglePower);
 
@@ -211,12 +213,12 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 //                if (wristPosition < 1) {
 //                    wristPosition += 0.1;
 //                }
-                wristServo.setPosition(1);
+                //wristServo.setPosition(1);
             } else if (gamepad1.dpad_left && (System.currentTimeMillis() - timeWristControlled > 200)) {
 //                if (wristPosition > 0) {
 //                    wristPosition -= 0.1;
 //                }
-                wristServo.setPosition(0.76); //WAS 0.8
+                //wristServo.setPosition(0.76); //WAS 0.8
             } else {
                 //wristServo.setPosition(1);
                 //theoretically nothing should happen
@@ -331,17 +333,16 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             leftBackDrive.setPower(leftBackPower);
             rightBackDrive.setPower(rightBackPower);
 
-//            long planeLaunched = -1;
-//            if (gamepad2.right_bumper){
-//                if (planefed == -1) {
-//                    launchServo.setPosition(LAUNCH_SERVO_OPEN);
-//                    planeLaunched = System.currentTimeMillis();
-//                } //after plane is launched, same button moves the servo back
-//            }
-//            if ((System.currentTimeMillis() - planeLaunched) >= 500) {
-//                launchServo.setPosition(LAUNCH_SERVO_CLOSED);
-//            }
-//
+            long planeLaunched = -1;
+            if (gamepad2.right_bumper){
+                if (planeLaunched == -1) {
+                    launchServo.setPosition(1);
+                    planeLaunched = System.currentTimeMillis();
+                } //after plane is launched, same button moves the servo back
+            }
+            if ((System.currentTimeMillis() - planeLaunched) >= 500) {
+                launchServo.setPosition(0);
+            }
 
             telemetry.addData("Extension_Motor encoder value: ", armExtensionMotor.getCurrentPosition());
             telemetry.addData("Angle_Motor encoder value: ",  armAngleMotor.getCurrentPosition());
