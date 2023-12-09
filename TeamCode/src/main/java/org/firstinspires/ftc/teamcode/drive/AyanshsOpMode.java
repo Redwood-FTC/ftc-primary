@@ -42,6 +42,7 @@ public class AyanshsOpMode extends LinearOpMode {
 
 /*
     This OpMode was made for Ayansh because he wanted his own OpMode for his own control scheme.
+    THIS IS NOT UP TO DATE, DON'T USE THIS!!
 */
 
     private ElapsedTime runtime = new ElapsedTime();

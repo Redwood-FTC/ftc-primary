@@ -41,6 +41,7 @@ import java.util.concurrent.TimeUnit;
     This OpMode was made to accommodate Rohan's preferences regarding pressing a button to set the
     pixel arm to a set position when placing pixels on the backboard. He would rather have it be
     manual for more flexibility.
+    THIS IS NOT UP TO DATE, DON'T USE THIS!!
 */
 
 @TeleOp(name="Rohan's OpMode", group="Linear Opmode")
