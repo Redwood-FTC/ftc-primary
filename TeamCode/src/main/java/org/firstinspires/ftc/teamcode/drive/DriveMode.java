@@ -95,6 +95,7 @@ public class DriveMode extends LinearOpMode {
     private DcMotor armExtensionMotor = null;
     private DcMotor intakeMotor = null;
     private Servo hookReleaseServo = null;
+    private Servo hookWristServo = null;
 
     @Override
     public void runOpMode() {
@@ -146,7 +147,7 @@ public class DriveMode extends LinearOpMode {
         hookAngleServo.setPosition(0.83);
 
         launchServo = hardwareMap.get(Servo.class, "launch_servo");
-        launchServo.setPosition(0.5);
+        launchServo.setPosition(0.85);
 
         winchMotor = hardwareMap.get(DcMotor.class, "winch_motor");
         winchMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -159,6 +160,9 @@ public class DriveMode extends LinearOpMode {
 
         intakeAngleServo = hardwareMap.get(Servo.class, "intake_angle_servo");
         intakeAngleServo.setPosition(1);
+
+        hookWristServo = hardwareMap.get(Servo.class, "hook_wrist_servo");
+        hookWristServo.setPosition(0.25);
 
         hookReleaseServo = hardwareMap.get(Servo.class, "hook_release_servo");
         hookReleaseServo.setPosition(1);
@@ -218,6 +222,8 @@ public class DriveMode extends LinearOpMode {
 
             if (gamepad2.b) {
                 hookReleaseServo.setPosition(0);
+            } else if (gamepad2.left_bumper) {
+                hookReleaseServo.setPosition(1);
             }
 
             if (gamepad1.dpad_right && (System.currentTimeMillis() - timeWristControlled > 200)) {
@@ -282,7 +288,7 @@ public class DriveMode extends LinearOpMode {
                 //begin raising armanglemotor
                 armAngleMotor.setTargetPosition(7200);
                 if ((System.currentTimeMillis() - timePixelModeChanged) > 1000) {
-                    wristServo.setPosition(0.76);
+                    wristServo.setPosition(0.76); //USE EXTENSION OF ARM MOTOR TO DETERMINE EXENSION
                 } //seperate if to allow separate tuning
                 if ((System.currentTimeMillis() - timePixelModeChanged) > 1000) {
                     armExtensionMotor.setTargetPosition(-2000); //was -2100
@@ -352,8 +358,10 @@ public class DriveMode extends LinearOpMode {
                 } //after plane is launched, same button moves the servo back
             }
             if ((System.currentTimeMillis() - planeLaunched) >= 500) {
-                launchServo.setPosition(0.5);
+                launchServo.setPosition(0.85);
             }
+
+            if ()
 
             telemetry.addData("Extension_Motor encoder value: ", armExtensionMotor.getCurrentPosition());
             telemetry.addData("Angle_Motor encoder value: ",  armAngleMotor.getCurrentPosition());
