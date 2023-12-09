@@ -14,7 +14,6 @@ import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
@@ -32,8 +31,8 @@ import java.util.concurrent.TimeUnit;
  * This is a simple routine to test translational drive capabilities.
  */
 @Config
-@Autonomous(group = "drive")
-public class BaseAutonomousMode extends LinearOpMode {
+@Autonomous(name = "Drive Mode", group = "drive")
+public class AutonomousMode extends LinearOpMode {
     public static double TILE_WIDTH = 24 * 24/21.5; // in
     public static double PIXEL_DROPPED = -0.4000;
     public static double PIXEL_HOLDING = 0.1200;

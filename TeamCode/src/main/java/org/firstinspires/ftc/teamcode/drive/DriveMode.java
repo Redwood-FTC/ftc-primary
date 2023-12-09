@@ -76,8 +76,8 @@ import java.util.concurrent.TimeUnit;
     AyanshsOpMode, but if they do, check with either Milo or Ayansh about it).
 */
 
-@TeleOp(name="Basic: Omni Linear OpMode", group="Linear Opmode")
-public class BasicOmniOpMode_Linear extends LinearOpMode {
+@TeleOp(name="Drive Mode", group="Linear Opmode")
+public class DriveMode extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors.
     private ElapsedTime runtime = new ElapsedTime();
@@ -143,10 +143,10 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         /* Motor Initialization END */
         /* Servo Initialization START */
         hookAngleServo = hardwareMap.get(Servo.class, "hook_angle_servo");
-        hookAngleServo.setPosition(0.77); //was .2
+        hookAngleServo.setPosition(0.83);
 
         launchServo = hardwareMap.get(Servo.class, "launch_servo");
-        launchServo.setPosition(0.05);
+        launchServo.setPosition(0.5);
 
         winchMotor = hardwareMap.get(DcMotor.class, "winch_motor");
         winchMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -352,7 +352,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
                 } //after plane is launched, same button moves the servo back
             }
             if ((System.currentTimeMillis() - planeLaunched) >= 500) {
-                launchServo.setPosition(0);
+                launchServo.setPosition(0.5);
             }
 
             telemetry.addData("Extension_Motor encoder value: ", armExtensionMotor.getCurrentPosition());
