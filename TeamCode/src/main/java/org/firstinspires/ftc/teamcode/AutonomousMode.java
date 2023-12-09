@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
  * This is a simple routine to test translational drive capabilities.
  */
 @Config
-@Autonomous(name = "Drive Mode", group = "drive")
+@Autonomous(name = "Autonomous Mode", group = "drive")
 public class AutonomousMode extends LinearOpMode {
     public static double TILE_WIDTH = 24 * 24/21.5; // in
     public static double PIXEL_DROPPED = -0.4000;
