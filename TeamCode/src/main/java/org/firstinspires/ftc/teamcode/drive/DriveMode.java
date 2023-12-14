@@ -29,7 +29,6 @@
 
 package org.firstinspires.ftc.teamcode.drive;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -81,22 +80,22 @@ import java.util.concurrent.TimeUnit;
 public class DriveMode extends OpMode {
 
     // Declare OpMode members for each of the 4 motors.
-    private final ElapsedTime runtime = new ElapsedTime();
-    private DcMotor leftFrontDrive = null;
-    private DcMotor leftBackDrive = null;
-    private DcMotor rightFrontDrive = null;
-    private DcMotor rightBackDrive = null;
-    private Servo hookAngleServo = null;
-    private Servo launchServo = null;
-    private DcMotor winchMotor = null;
-    private Servo wristServo = null;
-    private Servo bucketServo = null;
-    private Servo intakeAngleServo = null;
-    private DcMotor armAngleMotor = null;
-    private DcMotor armExtensionMotor = null;
-    private DcMotor intakeMotor = null;
-    private Servo hookReleaseServo = null;
-    private Servo hookWristServo = null;
+    protected final ElapsedTime runtime = new ElapsedTime();
+    protected DcMotor leftFrontDrive = null;
+    protected DcMotor leftBackDrive = null;
+    protected DcMotor rightFrontDrive = null;
+    protected DcMotor rightBackDrive = null;
+    protected Servo hookAngleServo = null;
+    protected Servo launchServo = null;
+    protected DcMotor winchMotor = null;
+    protected Servo wristServo = null;
+    protected Servo bucketServo = null;
+    protected Servo intakeAngleServo = null;
+    protected DcMotor armAngleMotor = null;
+    protected DcMotor armExtensionMotor = null;
+    protected DcMotor intakeMotor = null;
+    protected Servo hookReleaseServo = null;
+    protected Servo hookWristServo = null;
 
     @Override
     public void init() {
@@ -181,20 +180,27 @@ public class DriveMode extends OpMode {
         runtime.reset();
     }
 
-    private long timeWristControlled = System.currentTimeMillis();
-    private boolean pixelDropMode = false;
-    private long timePixelModeChanged = System.currentTimeMillis();
-    private double max;
+    protected long timeWristControlled = System.currentTimeMillis();
+    protected boolean pixelDropMode = false;
+    protected long timePixelModeChanged = System.currentTimeMillis();
 
+    // BROKEN
+    public class InputMapping{
+        public double axial;
+    }
+
+    protected InputMapping getGamepadInput(){
+
+    }
     @Override
     public void loop() {
-
+        double maxDriveMotorPower;
 
         // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
         double axial = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
         double lateral = gamepad1.left_stick_x;
         double yaw = gamepad1.right_stick_x;
-        double hookAnglePower;
+
         if (gamepad2.dpad_up) {
             hookAngleServo.setPosition(0.17); //go to hook (TEMP VALUE)
         } else if (gamepad2.dpad_down) {
@@ -248,16 +254,7 @@ public class DriveMode extends OpMode {
                 //wristServo.setPosition(1);
                 //theoretically nothing should happen
             }
-            //wristServo.setPosition(wristPosition);
 
-            //go to 1 when left trigger pressed?
-//            if (gamepad1.left_bumper && ((System.currentTimeMillis() - timeWristControlled) > 1000)) {
-//                //takes 3 seconds to go between positions
-//                //delay may need to be extended to prevent malfunction
-//                //TODO: ADD PROTECTION THAT ARM MUST BE EXTENDED
-//                wristPosition = (wristPosition == 1 ? 0 : 1);
-//                timeWristControlled = System.currentTimeMillis();
-//            }
 
             if (gamepad1.a) {
                 bucketServo.setPosition(1);
@@ -270,16 +267,6 @@ public class DriveMode extends OpMode {
                 intakeMotor.setPower(1); //TEMPORARY TO STOP LOUD NOISE
                 //intakeMotor.setPower(1);
             }
-
-//            if (gamepad1.right_trigger > 0.05) {
-//                armExtensionMotor.setTargetPosition(-2100);
-//                armExtensionMotor.setPower(gamepad1.right_trigger);
-//            } else if (gamepad1.left_trigger > 0.05) {
-//                armExtensionMotor.setPower(gamepad1.left_trigger);
-//                armExtensionMotor.setTargetPosition(0);
-//            } else {
-//                armExtensionMotor.setPower(0);
-//            }
 
             if (gamepad1.right_trigger > 0.05) {
                 pixelDropMode = true;
@@ -313,14 +300,6 @@ public class DriveMode extends OpMode {
 
             armAngleMotor.setPower(1.0); //TEMPORARY -- WILL BE MOVED TO SETUP SECTION LATER
 
-//            if (gamepad1.dpad_up) {
-//                armAngleMotor.setTargetPosition(7200); //was 7400
-//            } else if (gamepad1.dpad_down) {
-//                armAngleMotor.setTargetPosition(0);
-//            } else {
-//
-//            }
-
             if (gamepad1.x) {
                 //use extension test to reset position
                 //FIXXDX
@@ -341,15 +320,15 @@ public class DriveMode extends OpMode {
 
             // Normalize the values so no wheel power exceeds 100%
             // This ensures that the robot maintains the desired motion.
-            max = Math.max(Math.abs(leftFrontPower), Math.abs(rightFrontPower));
-            max = Math.max(max, Math.abs(leftBackPower));
-            max = Math.max(max, Math.abs(rightBackPower));
+            maxDriveMotorPower = Math.max(Math.abs(leftFrontPower), Math.abs(rightFrontPower));
+            maxDriveMotorPower = Math.max(maxDriveMotorPower, Math.abs(leftBackPower));
+            maxDriveMotorPower = Math.max(maxDriveMotorPower, Math.abs(rightBackPower));
 
-            if (max > 1.0) {
-                leftFrontPower /= max;
-                rightFrontPower /= max;
-                leftBackPower /= max;
-                rightBackPower /= max;
+            if (maxDriveMotorPower > 1.0) {
+                leftFrontPower /= maxDriveMotorPower;
+                rightFrontPower /= maxDriveMotorPower;
+                leftBackPower /= maxDriveMotorPower;
+                rightBackPower /= maxDriveMotorPower;
             }
 
             // Send calculated power to wheels
@@ -374,14 +353,16 @@ public class DriveMode extends OpMode {
             } else if (gamepad2.left_trigger > 0.05) {
                 hookWristServo.setPosition(0.67);
             }
-
-            telemetry.addData("Extension_Motor encoder value: ", armExtensionMotor.getCurrentPosition());
-            telemetry.addData("Angle_Motor encoder value: ", armAngleMotor.getCurrentPosition());
-            telemetry.addData("Angle_Intake_Servo encoder value: ", intakeAngleServo.getPosition());
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
-            telemetry.addData("Back left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
-            telemetry.update();
+            sendTelemetry();
         }
+    }
+    protected void sendTelemetry() {
+        telemetry.addData("Extension_Motor encoder value: ", armExtensionMotor.getCurrentPosition());
+        telemetry.addData("Angle_Motor encoder value: ", armAngleMotor.getCurrentPosition());
+        telemetry.addData("Angle_Intake_Servo encoder value: ", intakeAngleServo.getPosition());
+        telemetry.addData("Status", "Run Time: " + runtime.toString());
+        telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontDrive.getPower(), rightFrontDrive.getPower());
+        telemetry.addData("Back left/Right", "%4.2f, %4.2f", leftBackDrive.getPower(), rightBackDrive.getPower());
+        telemetry.update();
     }
 }

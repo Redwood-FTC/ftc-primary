@@ -45,24 +45,24 @@ import java.util.concurrent.TimeUnit;
 */
 
 @TeleOp(name="Rohan's OpMode", group="Linear Opmode")
-public class RohansOpMode extends LinearOpMode {
+public class RohansOpMode extends DriveMode {
 
     // Declare OpMode members for each of the 4 motors.
-    private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor leftFrontDrive = null;
-    private DcMotor leftBackDrive = null;
-    private DcMotor rightFrontDrive = null;
-    private DcMotor rightBackDrive = null;
-    private Servo hookAngleServo = null;
-    private Servo launchServo = null;
-    private DcMotor winchMotor = null;
-    private Servo wristServo = null;
-    private Servo bucketServo = null;
-    private Servo intakeAngleServo = null;
-    private DcMotor armAngleMotor = null;
-    private DcMotor armExtensionMotor = null;
-    private DcMotor intakeMotor = null;
-    private Servo hookReleaseServo = null;
+    protected ElapsedTime runtime = new ElapsedTime();
+    protected DcMotor leftFrontDrive = null;
+    protected DcMotor leftBackDrive = null;
+    protected DcMotor rightFrontDrive = null;
+    protected DcMotor rightBackDrive = null;
+    protected Servo hookAngleServo = null;
+    protected Servo launchServo = null;
+    protected DcMotor winchMotor = null;
+    protected Servo wristServo = null;
+    protected Servo bucketServo = null;
+    protected Servo intakeAngleServo = null;
+    protected DcMotor armAngleMotor = null;
+    protected DcMotor armExtensionMotor = null;
+    protected DcMotor intakeMotor = null;
+    protected Servo hookReleaseServo = null;
 
     @Override
     public void runOpMode() {
