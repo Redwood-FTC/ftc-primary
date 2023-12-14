@@ -73,113 +73,115 @@ public class AutonomousMode extends LinearOpMode {
 
         waitForStart();
 
-        long startTime = System.currentTimeMillis();
-        long currentTime = System.currentTimeMillis();
-        // Default to right signal
-        String signal = "right";
-        // Wait up to maxSignalDelay milliseconds before assuming the signal is out of view.
-        while ((currentTime - startTime) < maxSignalDelay){
-            currentTime = System.currentTimeMillis();
-            /* Camera START */
-            List<Recognition> currentRecognitions = tfod.getRecognitions();
-            // Step through the list of recognitions and display info for each one.
-            for (Recognition recognition : currentRecognitions) {
-                double x = (recognition.getLeft() + recognition.getRight()) / 2 ;
-                double y = (recognition.getTop()  + recognition.getBottom()) / 2 ;
-                if (x < leftCenterDivider){
-                    signal = "left";
-                } else {
-                    signal = "center";
-                }
-                break;
-            }
-        }
-        TrajectorySequenceBuilder toSignalTileTrajectoryBuilder = drive.trajectorySequenceBuilder(new Pose2d())
-                .forward(1 * TILE_WIDTH);
-        Trajectory postSignalTrajectory;
-        switch(signal){
-            case "left":
-                 toSignalTileTrajectoryBuilder
-                         .turn(Math.PI / 2);
-                break;
-            case "right":
-            default:
-                toSignalTileTrajectoryBuilder
-                        .turn(-Math.PI / 2);
-                break;
-            case "center":
-                break;
-        }
-        drive.followTrajectorySequence(toSignalTileTrajectoryBuilder.build());
+        drive.followTrajectorySequence(drive.trajectorySequenceBuilder(new Pose2d()).strafeLeft(2 * TILE_WIDTH).build());
 
-        // Creep forward until on the tape to drop the pixel.
-        boolean onTape = false;
-        Pose2d inTilePose = drive.getPoseEstimate();
-        while (!onTape){
-            /* Color sensor check START */
-            NormalizedRGBA colors = colorSensor.getNormalizedColors();
-            Color.colorToHSV(colors.toColor(), hsvValues);
-            /* Logic to what color tape it is over. */
-            float saturation = hsvValues[1];
-            onTape = (saturation >= 0.6) || (colors.red > 0.04);
-            drive.followTrajectory(
-                    drive.trajectoryBuilder(drive.getPoseEstimate())
-                            .forward(1)
-                            .build()
-            );
-            telemetry.addData("Saturation: ", saturation);
-            telemetry.update();
-        }
-
-        sleep(500);
-        purplePixelServo.setPosition(PIXEL_DROPPED);
-        sleep(500);
-
-//        for (int i = 0 ; i < 10; i++){
-//            drive.setMotorPowers(1,1,1,1);
-//            sleep(100);
-//            drive.setMotorPowers(-1,-1,-1,-1);
-//            sleep(100);
-//        }
-
-//        sleep(500); //make sure the pixel is on the ground before we set the servo
-        //it drags the pixel with it unless it's at a 90 degree angle to the ground
-        purplePixelServo.setPosition(PIXEL_POST_DROP);
-
-        drive.followTrajectorySequence(
-                drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                        .waitSeconds(0.5)
-                        .lineToLinearHeading(inTilePose)
-                        .build()
-        );
-
-        /* Color sensor check END */
-
-//        int desired_tag_id = -1;
-//        switch(signal){
-//            case "left":
-//                desired_tag_id = 4; // RED ALLIANCE TODO update for both alliances
-//                break;
-//            case "center":
-//                desired_tag_id = 5;
-//                break;
-//            case "right":
-//                desired_tag_id = 6;
-//                break;
-//        }
-//        boolean targetFound = false;
-//        while (!targetFound){
-//            // Step through the list of detected tags and look for a matching tag
-//            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-//            for (AprilTagDetection detection : currentDetections) {
-//                if ((detection.metadata != null)
-//                        && (detection.id == desired_tag_id)){
-//                    targetFound = true;
-//                    desiredTag = detection;
-//                    break;  // don't look any further.
+//        long startTime = System.currentTimeMillis();
+//        long currentTime = System.currentTimeMillis();
+//        // Default to right signal
+//        String signal = "right";
+//        // Wait up to maxSignalDelay milliseconds before assuming the signal is out of view.
+//        while ((currentTime - startTime) < maxSignalDelay){
+//            currentTime = System.currentTimeMillis();
+//            /* Camera START */
+//            List<Recognition> currentRecognitions = tfod.getRecognitions();
+//            // Step through the list of recognitions and display info for each one.
+//            for (Recognition recognition : currentRecognitions) {
+//                double x = (recognition.getLeft() + recognition.getRight()) / 2 ;
+//                double y = (recognition.getTop()  + recognition.getBottom()) / 2 ;
+//                if (x < leftCenterDivider){
+//                    signal = "left";
+//                } else {
+//                    signal = "center";
 //                }
+//                break;
 //            }
 //        }
+//        TrajectorySequenceBuilder toSignalTileTrajectoryBuilder = drive.trajectorySequenceBuilder(new Pose2d())
+//                .forward(1 * TILE_WIDTH);
+//        Trajectory postSignalTrajectory;
+//        switch(signal){
+//            case "left":
+//                 toSignalTileTrajectoryBuilder
+//                         .turn(Math.PI / 2);
+//                break;
+//            case "right":
+//            default:
+//                toSignalTileTrajectoryBuilder
+//                        .turn(-Math.PI / 2);
+//                break;
+//            case "center":
+//                break;
+//        }
+//        drive.followTrajectorySequence(toSignalTileTrajectoryBuilder.build());
+//
+//        // Creep forward until on the tape to drop the pixel.
+//        boolean onTape = false;
+//        Pose2d inTilePose = drive.getPoseEstimate();
+//        while (!onTape){
+//            /* Color sensor check START */
+//            NormalizedRGBA colors = colorSensor.getNormalizedColors();
+//            Color.colorToHSV(colors.toColor(), hsvValues);
+//            /* Logic to what color tape it is over. */
+//            float saturation = hsvValues[1];
+//            onTape = (saturation >= 0.6) || (colors.red > 0.04);
+//            drive.followTrajectory(
+//                    drive.trajectoryBuilder(drive.getPoseEstimate())
+//                            .forward(1)
+//                            .build()
+//            );
+//            telemetry.addData("Saturation: ", saturation);
+//            telemetry.update();
+//        }
+//
+//        sleep(500);
+//        purplePixelServo.setPosition(PIXEL_DROPPED);
+//        sleep(500);
+//
+////        for (int i = 0 ; i < 10; i++){
+////            drive.setMotorPowers(1,1,1,1);
+////            sleep(100);
+////            drive.setMotorPowers(-1,-1,-1,-1);
+////            sleep(100);
+////        }
+//
+////        sleep(500); //make sure the pixel is on the ground before we set the servo
+//        //it drags the pixel with it unless it's at a 90 degree angle to the ground
+//        purplePixelServo.setPosition(PIXEL_POST_DROP);
+//
+//        drive.followTrajectorySequence(
+//                drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+//                        .waitSeconds(0.5)
+//                        .lineToLinearHeading(inTilePose)
+//                        .build()
+//        );
+//
+//        /* Color sensor check END */
+//
+////        int desired_tag_id = -1;
+////        switch(signal){
+////            case "left":
+////                desired_tag_id = 4; // RED ALLIANCE TODO update for both alliances
+////                break;
+////            case "center":
+////                desired_tag_id = 5;
+////                break;
+////            case "right":
+////                desired_tag_id = 6;
+////                break;
+////        }
+////        boolean targetFound = false;
+////        while (!targetFound){
+////            // Step through the list of detected tags and look for a matching tag
+////            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+////            for (AprilTagDetection detection : currentDetections) {
+////                if ((detection.metadata != null)
+////                        && (detection.id == desired_tag_id)){
+////                    targetFound = true;
+////                    desiredTag = detection;
+////                    break;  // don't look any further.
+////                }
+////            }
+////        }
     }
 
     private void initTfod() {

@@ -144,7 +144,7 @@ public class DriveMode extends LinearOpMode {
         /* Motor Initialization END */
         /* Servo Initialization START */
         hookAngleServo = hardwareMap.get(Servo.class, "hook_angle_servo");
-        hookAngleServo.setPosition(0.83);
+        hookAngleServo.setPosition(0.8);
 
         launchServo = hardwareMap.get(Servo.class, "launch_servo");
         launchServo.setPosition(0.85);
@@ -162,7 +162,7 @@ public class DriveMode extends LinearOpMode {
         intakeAngleServo.setPosition(1);
 
         hookWristServo = hardwareMap.get(Servo.class, "hook_wrist_servo");
-        hookWristServo.setPosition(0.25);
+        hookWristServo.setPosition(1.0); //was .25
 
         hookReleaseServo = hardwareMap.get(Servo.class, "hook_release_servo");
         hookReleaseServo.setPosition(1);
@@ -192,9 +192,9 @@ public class DriveMode extends LinearOpMode {
             if (gamepad2.dpad_up) {
                 hookAngleServo.setPosition(0.17); //go to hook (TEMP VALUE)
             } else if (gamepad2.dpad_down) {
-                hookAngleServo.setPosition(0.65); //go to plane (TEMP VALUE)
+                hookAngleServo.setPosition(0.7); //go to plane (TEMP VALUE)
             } else if (gamepad2.y) {
-                hookAngleServo.setPosition(0.0);
+                //hookAngleServo.setPosition(0.0);
             } else if (gamepad2.x) {
                 hookAngleServo.setPosition(0.9);
             }
@@ -223,6 +223,8 @@ public class DriveMode extends LinearOpMode {
             if (gamepad2.b) {
                 hookReleaseServo.setPosition(0);
             } else if (gamepad2.left_bumper) {
+                hookReleaseServo.setPosition(1);
+            } else {
                 hookReleaseServo.setPosition(1);
             }
 
@@ -361,7 +363,11 @@ public class DriveMode extends LinearOpMode {
                 launchServo.setPosition(0.85);
             }
 
-            if ()
+            if (gamepad2.right_trigger > 0.05) {
+                hookWristServo.setPosition(1);
+            } else if (gamepad2.left_trigger > 0.05) {
+                hookWristServo.setPosition(0.67);
+            }
 
             telemetry.addData("Extension_Motor encoder value: ", armExtensionMotor.getCurrentPosition());
             telemetry.addData("Angle_Motor encoder value: ",  armAngleMotor.getCurrentPosition());
