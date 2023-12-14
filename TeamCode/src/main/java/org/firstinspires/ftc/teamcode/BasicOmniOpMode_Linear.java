@@ -185,7 +185,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             rightBackDrive.setPower(rightBackPower);
 
             hoistServo.setPosition(hoistPower);
-            bool planeLaunched = false;
+            boolean planeLaunched = false;
             if (gamepad1.right_bumper){
                 if (!planeLaunched) {
                     launchServo.setPosition(LAUNCH_SERVO_OPEN);
