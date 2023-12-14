@@ -30,6 +30,7 @@
 package org.firstinspires.ftc.teamcode.drive;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -42,25 +43,25 @@ import java.util.concurrent.TimeUnit;
  * An OpMode is a 'program' that runs in either the autonomous or the teleop period of an FTC match.
  * The names of OpModes appear on the menu of the FTC Driver Station.
  * When a selection is made from the menu, the corresponding OpMode is executed.
- *
+ * <p>
  * This particular OpMode illustrates driving a 4-motor Omni-Directional (or Holonomic) robot.
  * This code will work with either a Mecanum-Drive or an X-Drive train.
  * Both of these drives are illustrated at https://gm0.org/en/latest/docs/robot-design/drivetrains/holonomic.html
  * Note that a Mecanum drive must display an X roller-pattern when viewed from above.
- *
+ * <p>
  * Also note that it is critical to set the correct rotation direction for each motor.  See details below.
- *
+ * <p>
  * Holonomic drives provide the ability for the robot to move in three axes (directions) simultaneously.
  * Each motion axis is controlled by one Joystick axis.
- *
+ * <p>
  * 1) Axial:    Driving forward and backward               Left-joystick Forward/Backward
  * 2) Lateral:  Strafing right and left                     Left-joystick Right and Left
  * 3) Yaw:      Rotating Clockwise and counter clockwise    Right-joystick Right and Left
- *
+ * <p>
  * This code is written assuming that the right-side motors need to be reversed for the robot to drive forward.
  * When you first test your robot, if it moves backward when you push the left stick forward, then you must flip
  * the direction of all 4 motors (see code below).
- *
+ * <p>
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
@@ -76,11 +77,11 @@ import java.util.concurrent.TimeUnit;
     AyanshsOpMode, but if they do, check with either Milo or Ayansh about it).
 */
 
-@TeleOp(name="Drive Mode", group="Linear Opmode")
-public class DriveMode extends LinearOpMode {
+@TeleOp(name = "Drive Mode", group = "Linear Opmode")
+public class DriveMode extends OpMode {
 
     // Declare OpMode members for each of the 4 motors.
-    private ElapsedTime runtime = new ElapsedTime();
+    private final ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftFrontDrive = null;
     private DcMotor leftBackDrive = null;
     private DcMotor rightFrontDrive = null;
@@ -98,15 +99,15 @@ public class DriveMode extends LinearOpMode {
     private Servo hookWristServo = null;
 
     @Override
-    public void runOpMode() {
+    public void init() {
         //double LAUNCH_SERVO_OPEN = 0.5;
         //double LAUNCH_SERVO_CLOSED = 0.05;
 
         /* Motor Initialization START */
         // Initialize the hardware variables. Note that the strings used here must correspond
         // to the names assigned during the robot configuration step on the DS or RC devices.
-        leftFrontDrive  = hardwareMap.get(DcMotor.class, "left_front");
-        leftBackDrive  = hardwareMap.get(DcMotor.class, "left_back");
+        leftFrontDrive = hardwareMap.get(DcMotor.class, "left_front");
+        leftBackDrive = hardwareMap.get(DcMotor.class, "left_back");
         rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front");
         rightBackDrive = hardwareMap.get(DcMotor.class, "right_back");
 
@@ -167,55 +168,60 @@ public class DriveMode extends LinearOpMode {
         hookReleaseServo = hardwareMap.get(Servo.class, "hook_release_servo");
         hookReleaseServo.setPosition(1);
         /* Servo Initialization END */
+    }
 
-
-        // Wait for the game to start (driver presses PLAY)
+    @Override
+    public void init_loop() {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
+    }
 
-        waitForStart();
+    @Override
+    public void start() {
         runtime.reset();
+    }
 
-        // run until the end of the match (driver presses STOP)
-        long timeWristControlled = System.currentTimeMillis();
-        double wristPosition = 1;
-        boolean pixelDropMode = false;
-        long timePixelModeChanged = System.currentTimeMillis();
-        while (opModeIsActive()) {
-            double max;
+    private long timeWristControlled = System.currentTimeMillis();
+    private boolean pixelDropMode = false;
+    private long timePixelModeChanged = System.currentTimeMillis();
+    private double max;
 
-            // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
-            double axial   = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
-            double lateral =  gamepad1.left_stick_x;
-            double yaw     =  gamepad1.right_stick_x;
-            double hookAnglePower;
-            if (gamepad2.dpad_up) {
-                hookAngleServo.setPosition(0.17); //go to hook (TEMP VALUE)
-            } else if (gamepad2.dpad_down) {
-                hookAngleServo.setPosition(0.7); //go to plane (TEMP VALUE)
-            } else if (gamepad2.y) {
-                //hookAngleServo.setPosition(0.0);
-            } else if (gamepad2.x) {
-                hookAngleServo.setPosition(0.9);
-            }
-            //hookAngleServo.setPosition(hookAnglePower);
+    @Override
+    public void loop() {
 
-            double winchPower;
-            if (gamepad2.dpad_left) {
-                winchPower = -1.0;
-            } else if (gamepad2.dpad_right) {
-                winchPower = 1.0;
-            } else {
-                winchPower = 0.0;
-            }
-            winchMotor.setPower(winchPower);
 
-            // Test code for intake_angle_servo
-            // Remember to find correct values later
-            if (gamepad2.a) {
-                intakeAngleServo.setPosition(1);
-            } else if (runtime.now(TimeUnit.MILLISECONDS) > 700) {
-                intakeAngleServo.setPosition(0);
+        // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
+        double axial = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
+        double lateral = gamepad1.left_stick_x;
+        double yaw = gamepad1.right_stick_x;
+        double hookAnglePower;
+        if (gamepad2.dpad_up) {
+            hookAngleServo.setPosition(0.17); //go to hook (TEMP VALUE)
+        } else if (gamepad2.dpad_down) {
+            hookAngleServo.setPosition(0.7); //go to plane (TEMP VALUE)
+        } else if (gamepad2.y) {
+            //hookAngleServo.setPosition(0.0);
+        } else if (gamepad2.x) {
+            hookAngleServo.setPosition(0.9);
+        }
+        //hookAngleServo.setPosition(hookAnglePower);
+
+        double winchPower;
+        if (gamepad2.dpad_left) {
+            winchPower = -1.0;
+        } else if (gamepad2.dpad_right) {
+            winchPower = 1.0;
+        } else {
+            winchPower = 0.0;
+        }
+        winchMotor.setPower(winchPower);
+
+        // Test code for intake_angle_servo
+        // Remember to find correct values later
+        if (gamepad2.a) {
+            intakeAngleServo.setPosition(1);
+        } else if (runtime.now(TimeUnit.MILLISECONDS) > 700) {
+            intakeAngleServo.setPosition(0);
 
             // Test code for intake_angle_servo
             // Remember to find correct values later
@@ -328,10 +334,10 @@ public class DriveMode extends LinearOpMode {
 
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
             // Set up a variable for each drive wheel to save the power level for telemetry.
-            double leftFrontPower  = axial + lateral + yaw;
+            double leftFrontPower = axial + lateral + yaw;
             double rightFrontPower = axial - lateral - yaw;
-            double leftBackPower   = axial - lateral + yaw;
-            double rightBackPower  = axial + lateral - yaw;
+            double leftBackPower = axial - lateral + yaw;
+            double rightBackPower = axial + lateral - yaw;
 
             // Normalize the values so no wheel power exceeds 100%
             // This ensures that the robot maintains the desired motion.
@@ -353,7 +359,7 @@ public class DriveMode extends LinearOpMode {
             rightBackDrive.setPower(rightBackPower);
 
             long planeLaunched = -1;
-            if (gamepad2.right_bumper){
+            if (gamepad2.right_bumper) {
                 if (planeLaunched == -1) {
                     launchServo.setPosition(1);
                     planeLaunched = System.currentTimeMillis();
@@ -370,14 +376,12 @@ public class DriveMode extends LinearOpMode {
             }
 
             telemetry.addData("Extension_Motor encoder value: ", armExtensionMotor.getCurrentPosition());
-            telemetry.addData("Angle_Motor encoder value: ",  armAngleMotor.getCurrentPosition());
+            telemetry.addData("Angle_Motor encoder value: ", armAngleMotor.getCurrentPosition());
             telemetry.addData("Angle_Intake_Servo encoder value: ", intakeAngleServo.getPosition());
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
             telemetry.addData("Back left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
             telemetry.update();
-            //check if opmode not active, then wait while we close the intake angle servo
         }
     }
 }
-} //this threw an error without this
