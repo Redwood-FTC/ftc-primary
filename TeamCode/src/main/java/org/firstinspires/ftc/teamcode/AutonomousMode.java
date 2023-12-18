@@ -55,7 +55,7 @@ public class AutonomousMode extends LinearOpMode {
         initTfod();
         // X-value of line that separates left from center signal in camera image
         int leftCenterDivider = 250; // Robot 11.5cm from near tile interlocks
-        float maxSignalDelay = 5000; // ms
+        float maxSignalDelay = 5000; // milliseconds
         // Initialize the Apriltag Detection process
 //        initAprilTag();
 //        setManualExposure(6, 250);  // Use low exposure time to reduce motion blur
