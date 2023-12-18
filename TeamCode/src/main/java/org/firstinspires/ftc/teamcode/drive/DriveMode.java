@@ -180,7 +180,8 @@ public class DriveMode extends OpMode {
     public void loop() {
         double maxDriveMotorPower;
 
-        // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
+        // POV Mode uses left joystick to go forward (up/down) & strafe (left/right), and right
+        // joystick to rotate (left/right.
         double axial = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
         double lateral = gamepad1.left_stick_x;
         double yaw = gamepad1.right_stick_x;
