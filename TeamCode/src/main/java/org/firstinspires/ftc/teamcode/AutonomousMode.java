@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 @Config
 @Autonomous(name = "Autonomous Mode", group = "drive")
 public class AutonomousMode extends LinearOpMode {
-    public static double TILE_WIDTH = 24 * 24/21.5; // in
+    public static double TILE_WIDTH = 24 * 24/21.5; // inches
     public static double PIXEL_DROPPED = -0.4000;
     public static double PIXEL_HOLDING = 0.1200;
     public static double PIXEL_POST_DROP = 0.3;
@@ -58,7 +58,7 @@ public class AutonomousMode extends LinearOpMode {
         float maxSignalDelay = 5000; // milliseconds
 //      Initialize the Apriltag Detection process
 //        initAprilTag();
-//        setManualExposure(6, 250);  // Use low exposure time to reduce motion blur
+//        setManualExposure(6, 250); // Use low exposure time to reduce motion blur
 //        Camera Setup End
 
         // Color Sensor Setup Start
@@ -72,10 +72,12 @@ public class AutonomousMode extends LinearOpMode {
 
         waitForStart();
 
-//      example code:
-//      drive.followTrajectorySequence(drive.trajectorySequenceBuilder(new Pose2d())
-//          .strafeLeft(2 * TILE_WIDTH)
-//          .build());
+/**
+ * example code:
+ *       drive.followTrajectorySequence(drive.trajectorySequenceBuilder(new Pose2d())
+ *           .strafeLeft(2 * TILE_WIDTH)
+ *           .build());
+ */
 
 //        long startTime = System.currentTimeMillis();
 //        long currentTime = System.currentTimeMillis();
@@ -172,7 +174,7 @@ public class AutonomousMode extends LinearOpMode {
 ////                break;
 ////        }
 ////        boolean targetFound = false;
-////        while (!targetFound){
+////        while (!targetFound) {
 ////            // Step through the list of detected tags and look for a matching tag
 ////            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
 ////            for (AprilTagDetection detection : currentDetections) {
