@@ -65,17 +65,6 @@ import java.util.concurrent.TimeUnit;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-/*
-    If changes are made in this file, apply the same changes to RohansOpMode, but do not re-add
-    pressing a button to make the pixel arm go to a set position in order to drop a pixel on the
-    backboard (changes made to making the pixel arm go back to loading position should be added to
-    RohansOpMode). If any added changes to this OpMode conflict with the changes in RohansOpMode,
-    check with either Milo or Rohan about them.
-
-    Also add these changes to AyanshsOpMode (make sure that any changes added don't conflict with
-    AyanshsOpMode, but if they do, check with either Milo or Ayansh about it).
-*/
-
 @TeleOp(name = "Drive Mode", group = "Linear Opmode")
 public class DriveMode extends OpMode {
 
@@ -85,15 +74,16 @@ public class DriveMode extends OpMode {
     protected DcMotor leftBackDrive = null;
     protected DcMotor rightFrontDrive = null;
     protected DcMotor rightBackDrive = null;
-    protected Servo hookAngleServo = null;
-    protected Servo launchServo = null;
     protected DcMotor winchMotor = null;
-    protected Servo wristServo = null;
-    protected Servo bucketServo = null;
-    protected Servo intakeAngleServo = null;
     protected DcMotor armAngleMotor = null;
     protected DcMotor armExtensionMotor = null;
     protected DcMotor intakeMotor = null;
+
+    protected Servo hookAngleServo = null;
+    protected Servo launchServo = null;
+    protected Servo wristServo = null;
+    protected Servo bucketServo = null;
+    protected Servo intakeAngleServo = null;
     protected Servo hookReleaseServo = null;
     protected Servo hookWristServo = null;
 
@@ -102,7 +92,7 @@ public class DriveMode extends OpMode {
         //double LAUNCH_SERVO_OPEN = 0.5;
         //double LAUNCH_SERVO_CLOSED = 0.05;
 
-        /* Motor Initialization START */
+        // Motor Initialization START
         // Initialize the hardware variables. Note that the strings used here must correspond
         // to the names assigned during the robot configuration step on the DS or RC devices.
         leftFrontDrive = hardwareMap.get(DcMotor.class, "left_front");
@@ -115,23 +105,16 @@ public class DriveMode extends OpMode {
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
 
-        armExtensionMotor = hardwareMap.get(DcMotor.class, "arm_extension_motor");
-        armExtensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        armExtensionMotor.setPower(0);
-        armExtensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armExtensionMotor.setTargetPosition(0);
-        armExtensionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
         armAngleMotor = hardwareMap.get(DcMotor.class, "arm_angle_motor");
         armAngleMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        armAngleMotor.setPower(0);
+        armAngleMotor.setPower(1.0);
         armAngleMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armAngleMotor.setTargetPosition(0);
         armAngleMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         armExtensionMotor = hardwareMap.get(DcMotor.class, "arm_extension_motor");
         armExtensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        armExtensionMotor.setPower(0.4); //controlled automatically, fine tuning not needed
+        armExtensionMotor.setPower(0.4); // Controlled automatically, fine tuning not needed
         armExtensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armExtensionMotor.setTargetPosition(0);
         armExtensionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -141,16 +124,17 @@ public class DriveMode extends OpMode {
 
         intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
         intakeMotor.setPower(0);
-        /* Motor Initialization END */
-        /* Servo Initialization START */
+
+        winchMotor = hardwareMap.get(DcMotor.class, "winch_motor");
+        winchMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        // Motor Initialization END
+
+        // Servo Initialization START
         hookAngleServo = hardwareMap.get(Servo.class, "hook_angle_servo");
         hookAngleServo.setPosition(0.8);
 
         launchServo = hardwareMap.get(Servo.class, "launch_servo");
         launchServo.setPosition(0.85);
-
-        winchMotor = hardwareMap.get(DcMotor.class, "winch_motor");
-        winchMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         wristServo = hardwareMap.get(Servo.class, "wrist_servo");
         wristServo.setPosition(1);
@@ -166,7 +150,7 @@ public class DriveMode extends OpMode {
 
         hookReleaseServo = hardwareMap.get(Servo.class, "hook_release_servo");
         hookReleaseServo.setPosition(1);
-        /* Servo Initialization END */
+        // Servo Initialization END
     }
 
     @Override
@@ -297,12 +281,8 @@ public class DriveMode extends OpMode {
                 wristServo.setPosition(1.0);
             }
 
-
-            armAngleMotor.setPower(1.0); //TEMPORARY -- WILL BE MOVED TO SETUP SECTION LATER
-
             if (gamepad1.x) {
                 //use extension test to reset position
-                //FIXXDX
                 //armAngleMotor.setPower(-1.0);
             } else if (gamepad1.y) {
                 //armAngleMotor.setPower(1.0);
@@ -318,7 +298,7 @@ public class DriveMode extends OpMode {
             double leftBackPower = axial - lateral + yaw;
             double rightBackPower = axial + lateral - yaw;
 
-            // Normalize the values so no wheel power exceeds 100%
+            // Normalize the values so no wheel power exceeds 100%.
             // This ensures that the robot maintains the desired motion.
             maxDriveMotorPower = Math.max(Math.abs(leftFrontPower), Math.abs(rightFrontPower));
             maxDriveMotorPower = Math.max(maxDriveMotorPower, Math.abs(leftBackPower));
