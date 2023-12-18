@@ -56,19 +56,19 @@ public class AutonomousMode extends LinearOpMode {
         // X-value of line that separates left from center signal in camera image
         int leftCenterDivider = 250; // Robot 11.5cm from near tile interlocks
         float maxSignalDelay = 5000; // milliseconds
-        // Initialize the Apriltag Detection process
+//      Initialize the Apriltag Detection process
 //        initAprilTag();
 //        setManualExposure(6, 250);  // Use low exposure time to reduce motion blur
-        /* Camera Setup End */
+//        Camera Setup End
 
-        /* Color Sensor Setup Start */
+        // Color Sensor Setup Start
         float gain = 3;
         final float[] hsvValues = new float[3];
         colorSensor = hardwareMap.get(NormalizedColorSensor.class, "sensor_color");
         colorSensor.setGain(gain);
         purplePixelServo = hardwareMap.get(Servo.class, "purple_pixel_servo");
         purplePixelServo.setPosition(PIXEL_HOLDING);
-        /* Color Sensor Setup End */
+        // Color Sensor Setup End
 
         waitForStart();
 
