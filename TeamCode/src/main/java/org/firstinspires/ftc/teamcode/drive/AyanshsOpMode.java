@@ -38,8 +38,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import java.util.concurrent.TimeUnit;
 
 /**
- * This OpMode was made for Ayansh because he wanted his own OpMode for his own control scheme.
- *     THIS IS NOT UP TO DATE, DON'T USE THIS!!
+ * This OpMode was made for Ayansh because he wanted his own control scheme.
+ * THIS IS NOT UP TO DATE, DON'T USE THIS!!
  */
 @TeleOp(name="Ayansh's OpMode", group="Linear Opmode")
 public class AyanshsOpMode extends DriveMode {

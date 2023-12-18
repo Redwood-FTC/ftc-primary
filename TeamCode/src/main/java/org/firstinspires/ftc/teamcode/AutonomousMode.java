@@ -27,8 +27,8 @@ import org.firstinspires.ftc.vision.tfod.TfodProcessor;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-/*
- * This is a simple routine to test translational drive capabilities.
+/**
+ * * This is a simple routine to test translational drive capabilities.
  */
 @Config
 @Autonomous(name = "Autonomous Mode", group = "drive")
@@ -69,7 +69,6 @@ public class AutonomousMode extends LinearOpMode {
         purplePixelServo = hardwareMap.get(Servo.class, "purple_pixel_servo");
         purplePixelServo.setPosition(PIXEL_HOLDING);
         /* Color Sensor Setup End */
-
 
         waitForStart();
 
@@ -216,7 +215,7 @@ public class AutonomousMode extends LinearOpMode {
      Manually set the camera gain and exposure.
      This can only be called AFTER calling initAprilTag(), and only works for Webcams;
     */
-    private void    setManualExposure(int exposureMS, int gain) {
+    private void setManualExposure(int exposureMS, int gain) {
         // Wait for the camera to be open, then use the controls
 
         if (aprilTagVisionPortal == null) {
