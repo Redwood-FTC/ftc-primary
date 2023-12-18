@@ -170,7 +170,9 @@ public class DriveMode extends OpMode {
 
     // BROKEN
     public class InputMapping{
-        public double axial;
+        public double axial = -gamepad1.left_stick_y; // Pushing stick forward gives negative value.
+        public double lateral = gamepad1.left_stick_x;
+        public double yaw = gamepad1.right_stick_x;
     }
 
     protected InputMapping getGamepadInput(){
@@ -182,9 +184,6 @@ public class DriveMode extends OpMode {
 
         // POV Mode uses left joystick to go forward (up/down) & strafe (left/right), and right
         // joystick to rotate (left/right.
-        double axial = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
-        double lateral = gamepad1.left_stick_x;
-        double yaw = gamepad1.right_stick_x;
 
         if (gamepad2.dpad_up) {
             hookAngleServo.setPosition(0.17); //go to hook (TEMP VALUE)
