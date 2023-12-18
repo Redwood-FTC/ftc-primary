@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * * This is a simple routine to test translational drive capabilities.
- */
+* This is a simple routine to test translational drive capabilities.
+*/
 @Config
 @Autonomous(name = "Autonomous Mode", group = "drive")
 public class AutonomousMode extends LinearOpMode {
@@ -72,7 +72,10 @@ public class AutonomousMode extends LinearOpMode {
 
         waitForStart();
 
-        drive.followTrajectorySequence(drive.trajectorySequenceBuilder(new Pose2d()).strafeLeft(2 * TILE_WIDTH).build());
+//      example code:
+//      drive.followTrajectorySequence(drive.trajectorySequenceBuilder(new Pose2d())
+//          .strafeLeft(2 * TILE_WIDTH)
+//          .build());
 
 //        long startTime = System.currentTimeMillis();
 //        long currentTime = System.currentTimeMillis();
@@ -136,15 +139,15 @@ public class AutonomousMode extends LinearOpMode {
 //        purplePixelServo.setPosition(PIXEL_DROPPED);
 //        sleep(500);
 //
-////        for (int i = 0 ; i < 10; i++){
-////            drive.setMotorPowers(1,1,1,1);
-////            sleep(100);
-////            drive.setMotorPowers(-1,-1,-1,-1);
-////            sleep(100);
-////        }
+//        for (int i = 0 ; i < 10; i++){
+//            drive.setMotorPowers(1,1,1,1);
+//            sleep(100);
+//            drive.setMotorPowers(-1,-1,-1,-1);
+//            sleep(100);
+//        }
 //
-////        sleep(500); //make sure the pixel is on the ground before we set the servo
-//        //it drags the pixel with it unless it's at a 90 degree angle to the ground
+//        sleep(500); //make sure the pixel is on the ground before we set the servo
+//        // It drags the pixel with it unless it's at a 90 degree angle to the ground
 //        purplePixelServo.setPosition(PIXEL_POST_DROP);
 //
 //        drive.followTrajectorySequence(
@@ -156,31 +159,31 @@ public class AutonomousMode extends LinearOpMode {
 //
 //        /* Color sensor check END */
 //
-////        int desired_tag_id = -1;
-////        switch(signal){
-////            case "left":
-////                desired_tag_id = 4; // RED ALLIANCE TODO update for both alliances
-////                break;
-////            case "center":
-////                desired_tag_id = 5;
-////                break;
-////            case "right":
-////                desired_tag_id = 6;
-////                break;
-////        }
-////        boolean targetFound = false;
-////        while (!targetFound){
-////            // Step through the list of detected tags and look for a matching tag
-////            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-////            for (AprilTagDetection detection : currentDetections) {
-////                if ((detection.metadata != null)
-////                        && (detection.id == desired_tag_id)){
-////                    targetFound = true;
-////                    desiredTag = detection;
-////                    break;  // don't look any further.
-////                }
-////            }
-////        }
+//        int desired_tag_id = -1;
+//        switch(signal){
+//            case "left":
+//                desired_tag_id = 4; // RED ALLIANCE TODO update for both alliances
+//                break;
+//            case "center":
+//                desired_tag_id = 5;
+//                break;
+//            case "right":
+//                desired_tag_id = 6;
+//                break;
+//        }
+//        boolean targetFound = false;
+//        while (!targetFound){
+//            // Step through the list of detected tags and look for a matching tag
+//            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+//            for (AprilTagDetection detection : currentDetections) {
+//                if ((detection.metadata != null)
+//                        && (detection.id == desired_tag_id)){
+//                    targetFound = true;
+//                    desiredTag = detection;
+//                    break;  // don't look any further.
+//                }
+//            }
+//        }
     }
 
     private void initTfod() {
