@@ -139,14 +139,14 @@ public class AutonomousMode extends LinearOpMode {
 //        purplePixelServo.setPosition(PIXEL_DROPPED);
 //        sleep(500);
 //
-//        for (int i = 0 ; i < 10; i++){
-//            drive.setMotorPowers(1,1,1,1);
-//            sleep(100);
-//            drive.setMotorPowers(-1,-1,-1,-1);
-//            sleep(100);
-//        }
+////        for (int i = 0 ; i < 10; i++){
+////            drive.setMotorPowers(1,1,1,1);
+////            sleep(100);
+////            drive.setMotorPowers(-1,-1,-1,-1);
+////            sleep(100);
+////        }
 //
-//        sleep(500); //make sure the pixel is on the ground before we set the servo
+////        sleep(500); //make sure the pixel is on the ground before we set the servo
 //        // It drags the pixel with it unless it's at a 90 degree angle to the ground
 //        purplePixelServo.setPosition(PIXEL_POST_DROP);
 //
@@ -159,31 +159,31 @@ public class AutonomousMode extends LinearOpMode {
 //
 //        /* Color sensor check END */
 //
-//        int desired_tag_id = -1;
-//        switch(signal){
-//            case "left":
-//                desired_tag_id = 4; // RED ALLIANCE TODO update for both alliances
-//                break;
-//            case "center":
-//                desired_tag_id = 5;
-//                break;
-//            case "right":
-//                desired_tag_id = 6;
-//                break;
-//        }
-//        boolean targetFound = false;
-//        while (!targetFound){
-//            // Step through the list of detected tags and look for a matching tag
-//            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-//            for (AprilTagDetection detection : currentDetections) {
-//                if ((detection.metadata != null)
-//                        && (detection.id == desired_tag_id)){
-//                    targetFound = true;
-//                    desiredTag = detection;
-//                    break;  // don't look any further.
-//                }
-//            }
-//        }
+////        int desired_tag_id = -1;
+////        switch(signal){
+////            case "left":
+////                desired_tag_id = 4; // RED ALLIANCE TODO update for both alliances
+////                break;
+////            case "center":
+////                desired_tag_id = 5;
+////                break;
+////            case "right":
+////                desired_tag_id = 6;
+////                break;
+////        }
+////        boolean targetFound = false;
+////        while (!targetFound){
+////            // Step through the list of detected tags and look for a matching tag
+////            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+////            for (AprilTagDetection detection : currentDetections) {
+////                if ((detection.metadata != null)
+////                        && (detection.id == desired_tag_id)){
+////                    targetFound = true;
+////                    desiredTag = detection;
+////                    break;  // don't look any further.
+////                }
+////            }
+////        }
     }
 
     private void initTfod() {
@@ -214,10 +214,10 @@ public class AutonomousMode extends LinearOpMode {
                 .build();
     }
 
-    /*
-     Manually set the camera gain and exposure.
-     This can only be called AFTER calling initAprilTag(), and only works for Webcams;
-    */
+    /**
+     * Manually set the camera gain and exposure.
+     * This can only be called AFTER calling initAprilTag(), and only works for Webcams.
+     */
     private void setManualExposure(int exposureMS, int gain) {
         // Wait for the camera to be open, then use the controls
 
