@@ -87,9 +87,32 @@ public class DriveMode extends OpMode {
     protected Servo hookReleaseServo = null;
     protected Servo hookWristServo = null;
 
-    protected double hookArmHangingAngle = 0.17;
-    protected double hookArmDroneAngle = 0.7;
+    /* "Magic number" constants for physical positions. */
+    protected final double stoppedMotorPower = 0.0;
+    protected final double stoppedContinuousServoPosition = 0.5;
+    protected final double hookArmHangingAngle = 0.17;
+    protected final double hookArmDroneAngle = 0.7;
+    protected final double unwindWinchPower = -1.0;
+    protected final double windWinchPower = 1.0;
+    protected final double raisedIntakePosition = 1.0;
+    protected final double loweredIntakePosition = 0.0;
+    protected final double releasedHookPosition = 0.0;
+    protected final double heldHookPosition = 1.0;
+    protected final double dropBucketPixelPosition = 1.0;
+    protected final double pauseBucketPixelPosition = 0.5;
+    protected final double loadBucketPixelPosition = 0.0;
 
+    /* Settable positions/powers used in performActions() */
+    private double hookAngleServoPosition = 0.0;
+    private double winchMotorPower = 0.0;
+    private double intakeAngleServoPosition = 0.0;
+    private double hookReleaseServoPosition = 0.0;
+    private double bucketServoPosition = 0.0;
+
+    private double leftFrontDrivePower = 0.0;
+    private double rightFrontDrivePower = 0.0;
+    private double leftBackDrivePower = 0.0;
+    private double rightBackDrivePower = 0.0;
 
     @Override
     public void init() {
@@ -172,60 +195,92 @@ public class DriveMode extends OpMode {
     protected boolean pixelDropMode = false;
     protected long timePixelModeChanged = System.currentTimeMillis();
 
-    // BROKEN
-    public class InputMapping{
-        /** Robot's forward-backward movement. Ranges from -1 to 1, inclusive. */
+    public class InputMapping {
+        /**
+         * Robot's forward-backward movement. Ranges from -1 to 1, inclusive.
+         */
         public double axial = -gamepad1.left_stick_y; // Pushing stick forward gives negative value.
 
-        /** Robot's left-right movement. Ranges from -1 to 1, inclusive. */
+        /**
+         * Robot's left-right movement. Ranges from -1 to 1, inclusive.
+         */
         public double lateral = gamepad1.left_stick_x;
 
-        /** Robot's rotation movement. Ranges from -1 to 1, inclusive. */
+        /**
+         * Robot's rotation movement. Ranges from -1 to 1, inclusive.
+         */
         public double yaw = gamepad1.right_stick_x;
 
-        /** Rotate hook arm to hanging angle. */
+        /**
+         * Rotate hook arm to hanging angle.
+         */
         public boolean goToHangingAngle = gamepad2.dpad_up;
 
-        /** Rotate hook arm to drone launch angle. */
+        /**
+         * Rotate hook arm to drone launch angle.
+         */
         public boolean goToDroneAngle = gamepad2.dpad_down;
 
-        /** Wind in hanging winch. */
+        /**
+         * Wind in hanging winch.
+         */
         public boolean windWinch = gamepad2.dpad_right;
-        /** Unwind hanging winch. */
+        /**
+         * Unwind hanging winch.
+         */
         public boolean unwindWinch = gamepad2.dpad_left;
 
-        /** Raise the intake off of the floor. */
+        /**
+         * Raise the intake off of the floor.
+         */
         public boolean raiseIntake = gamepad2.a;
 
-        /** Release the hook. */
+        /**
+         * Release the hook.
+         */
         public boolean releaseHook = gamepad2.b;
 
-        /** Drop pixels from the bucket. */
+        /**
+         * Drop pixels from the bucket.
+         */
         public boolean dropBucketPixel = gamepad1.a;
 
-        /** Pause bucket wheel spinning */
+        /**
+         * Pause bucket wheel spinning
+         */
         public boolean pauseBucket = gamepad1.b;
 
-        /** Move pixel arm to drop position. */
+        /**
+         * Move pixel arm to drop position.
+         */
         public boolean goToDropPosition = gamepad1.right_trigger > 0.05;
 
-        /** Move pixel arm to load position. */
+        /**
+         * Move pixel arm to load position.
+         */
         public boolean goToLoadPosition = gamepad1.left_trigger > 0.05;
 
-        /** Lift the pixel arm. */
+        /**
+         * Lift the pixel arm.
+         */
         public boolean liftPixelArm = gamepad1.y;
 
 
-        /** Lower the pixel arm. */
+        /**
+         * Lower the pixel arm.
+         */
         public boolean lowerPixelArm = gamepad1.x;
 
-        /** Launch the drone. */
+        /**
+         * Launch the drone.
+         */
         public boolean launchDrone = gamepad2.right_bumper;
     }
 
-    protected InputMapping getInput(){
+    protected InputMapping getInput() {
         return new InputMapping();
     }
+
     @Override
     public void loop() {
         double maxDriveMotorPower;
@@ -236,45 +291,43 @@ public class DriveMode extends OpMode {
         // joystick to rotate (left/right.
 
         if (input.goToHangingAngle) {
-            hookAngleServo.setPosition(hookArmHangingAngle);
+            hookAngleServoPosition = hookArmHangingAngle;
         } else if (input.goToDroneAngle) {
-            hookAngleServo.setPosition(hookArmDroneAngle);
+            hookAngleServoPosition = hookArmDroneAngle;
         }
 
-        double winchPower;
         if (input.unwindWinch) {
-            winchPower = -1.0;
+            winchMotorPower = unwindWinchPower;
         } else if (input.windWinch) {
-            winchPower = 1.0;
+            winchMotorPower = windWinchPower;
         } else {
-            winchPower = 0.0;
+            winchMotorPower = stoppedMotorPower;
         }
-        winchMotor.setPower(winchPower);
 
         // Test code for intake_angle_servo
         // Remember to find correct values later
         if (input.raiseIntake) {
-            intakeAngleServo.setPosition(1);
+            intakeAngleServoPosition = raisedIntakePosition;
         } else if (runtime.now(TimeUnit.MILLISECONDS) > 700) {
-            intakeAngleServo.setPosition(0);
+            intakeAngleServoPosition = loweredIntakePosition;
 
             // Test code for intake_angle_servo
             // Remember to find correct values later
 
             if (input.releaseHook) {
-                hookReleaseServo.setPosition(0);
+                hookReleaseServoPosition = releasedHookPosition;
             } else {
-                hookReleaseServo.setPosition(1);
+                hookReleaseServoPosition = heldHookPosition;
             }
 
             if (input.dropBucketPixel) {
-                bucketServo.setPosition(1);
+                bucketServoPosition = dropBucketPixelPosition;
                 intakeMotor.setPower(-1);
             } else if (input.pauseBucket) {
-                bucketServo.setPosition(0);
+                bucketServoPosition = pauseBucketPixelPosition;
                 intakeMotor.setPower(1);
             } else {
-                bucketServo.setPosition(1);
+                bucketServoPosition = loadBucketPixelPosition;
                 intakeMotor.setPower(1);
             }
 
@@ -315,33 +368,27 @@ public class DriveMode extends OpMode {
 
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
             // Set up a variable for each drive wheel to save the power level for telemetry.
-            double leftFrontPower = input.axial + input.lateral + input.yaw;
-            double rightFrontPower = input.axial - input.lateral - input.yaw;
-            double leftBackPower = input.axial - input.lateral + input.yaw;
-            double rightBackPower = input.axial + input.lateral - input.yaw;
+            leftFrontDrivePower = input.axial + input.lateral + input.yaw;
+            rightFrontDrivePower = input.axial - input.lateral - input.yaw;
+            leftBackDrivePower = input.axial - input.lateral + input.yaw;
+            rightBackDrivePower = input.axial + input.lateral - input.yaw;
 
             // Normalize the values so no wheel power exceeds 100%.
             // This ensures that the robot maintains the desired motion.
-            maxDriveMotorPower = Math.max(Math.abs(leftFrontPower), Math.abs(rightFrontPower));
-            maxDriveMotorPower = Math.max(maxDriveMotorPower, Math.abs(leftBackPower));
-            maxDriveMotorPower = Math.max(maxDriveMotorPower, Math.abs(rightBackPower));
+            maxDriveMotorPower = Math.max(Math.abs(leftFrontDrivePower), Math.abs(rightFrontDrivePower));
+            maxDriveMotorPower = Math.max(maxDriveMotorPower, Math.abs(leftBackDrivePower));
+            maxDriveMotorPower = Math.max(maxDriveMotorPower, Math.abs(rightBackDrivePower));
 
             if (maxDriveMotorPower > 1.0) {
-                leftFrontPower /= maxDriveMotorPower;
-                rightFrontPower /= maxDriveMotorPower;
-                leftBackPower /= maxDriveMotorPower;
-                rightBackPower /= maxDriveMotorPower;
+                leftFrontDrivePower /= maxDriveMotorPower;
+                rightFrontDrivePower /= maxDriveMotorPower;
+                leftBackDrivePower /= maxDriveMotorPower;
+                rightBackDrivePower /= maxDriveMotorPower;
             }
-
-            // Send calculated power to wheels
-            leftFrontDrive.setPower(leftFrontPower);
-            rightFrontDrive.setPower(rightFrontPower);
-            leftBackDrive.setPower(leftBackPower);
-            rightBackDrive.setPower(rightBackPower);
 
             long planeLaunched = -1;
             if (input.launchDrone) {
-                if (planeLaunched == -1) {
+                    if (planeLaunched == -1) {
                     launchServo.setPosition(1);
                     planeLaunched = System.currentTimeMillis();
                 } //after plane is launched, same button moves the servo back
@@ -349,11 +396,32 @@ public class DriveMode extends OpMode {
             if ((System.currentTimeMillis() - planeLaunched) >= 500) {
                 launchServo.setPosition(0.85);
             }
-            
 
+            performActions();
             sendTelemetry();
         }
     }
+
+
+    /**
+     * Execute motor/servo outputs.
+     */
+    protected void performActions() {
+        hookAngleServo.setPosition(hookAngleServoPosition);
+        winchMotor.setPower(winchMotorPower);
+        intakeAngleServo.setPosition(intakeAngleServoPosition);
+        hookReleaseServo.setPosition(hookReleaseServoPosition);
+        bucketServo.setPosition(bucketServoPosition);
+        // Drive motors
+        leftFrontDrive.setPower(leftFrontDrivePower);
+        rightFrontDrive.setPower(rightFrontDrivePower);
+        leftBackDrive.setPower(leftBackDrivePower);
+        rightBackDrive.setPower(rightBackDrivePower);
+    }
+
+    /**
+     * Send telemetry about robot state back to Driver Station.
+     */
     protected void sendTelemetry() {
         telemetry.addData("Extension_Motor encoder value: ", armExtensionMotor.getCurrentPosition());
         telemetry.addData("Angle_Motor encoder value: ", armAngleMotor.getCurrentPosition());
