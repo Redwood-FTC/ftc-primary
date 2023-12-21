@@ -168,16 +168,6 @@ public class DriveMode extends OpMode {
     protected boolean pixelDropMode = false;
     protected long timePixelModeChanged = System.currentTimeMillis();
 
-    // BROKEN
-    public class InputMapping{
-        public double axial = -gamepad1.left_stick_y; // Pushing stick forward gives negative value.
-        public double lateral = gamepad1.left_stick_x;
-        public double yaw = gamepad1.right_stick_x;
-    }
-
-    protected InputMapping getGamepadInput(){
-
-    }
     @Override
     public void loop() {
         double maxDriveMotorPower;
@@ -290,6 +280,9 @@ public class DriveMode extends OpMode {
                 //armAngleMotor.setPower(0.0);
             }
 
+            double axial = -gamepad1.left_stick_y; // Pushing stick forward gives negative value.
+            double lateral = gamepad1.left_stick_x;
+            double yaw = gamepad1.right_stick_x;
 
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
             // Set up a variable for each drive wheel to save the power level for telemetry.
