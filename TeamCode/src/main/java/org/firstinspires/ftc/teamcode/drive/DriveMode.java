@@ -87,6 +87,10 @@ public class DriveMode extends OpMode {
     protected Servo hookReleaseServo = null;
     protected Servo hookWristServo = null;
 
+    protected double hookArmHangingAngle = 0.17;
+    protected double hookArmDroneAngle = 0.7;
+
+
     @Override
     public void init() {
         //double LAUNCH_SERVO_OPEN = 0.5;
@@ -180,7 +184,7 @@ public class DriveMode extends OpMode {
         public double yaw = gamepad1.right_stick_x;
 
         /** Rotate hook arm to hanging angle. */
-        public boolean goToHookAngle = gamepad2.dpad_up;
+        public boolean goToHangingAngle = gamepad2.dpad_up;
 
         /** Rotate hook arm to drone launch angle. */
         public boolean goToDroneAngle = gamepad2.dpad_down;
@@ -231,21 +235,16 @@ public class DriveMode extends OpMode {
         // POV Mode uses left joystick to go forward (up/down) & strafe (left/right), and right
         // joystick to rotate (left/right.
 
-        if (input.goToHookAngle) {
-            hookAngleServo.setPosition(0.17); //go to hook (TEMP VALUE)
-        } else if (gamepad2.dpad_down) {
-            hookAngleServo.setPosition(0.7); //go to plane (TEMP VALUE)
-        } else if (gamepad2.y) {
-            //hookAngleServo.setPosition(0.0);
-        } else if (gamepad2.x) {
-            hookAngleServo.setPosition(0.9);
+        if (input.goToHangingAngle) {
+            hookAngleServo.setPosition(hookArmHangingAngle);
+        } else if (input.goToDroneAngle) {
+            hookAngleServo.setPosition(hookArmDroneAngle);
         }
-        //hookAngleServo.setPosition(hookAnglePower);
 
         double winchPower;
-        if (gamepad2.dpad_left) {
+        if (input.unwindWinch) {
             winchPower = -1.0;
-        } else if (gamepad2.dpad_right) {
+        } else if (input.windWinch) {
             winchPower = 1.0;
         } else {
             winchPower = 0.0;
@@ -254,7 +253,7 @@ public class DriveMode extends OpMode {
 
         // Test code for intake_angle_servo
         // Remember to find correct values later
-        if (gamepad2.a) {
+        if (input.raiseIntake) {
             intakeAngleServo.setPosition(1);
         } else if (runtime.now(TimeUnit.MILLISECONDS) > 700) {
             intakeAngleServo.setPosition(0);
@@ -262,87 +261,64 @@ public class DriveMode extends OpMode {
             // Test code for intake_angle_servo
             // Remember to find correct values later
 
-            if (gamepad2.b) {
+            if (input.releaseHook) {
                 hookReleaseServo.setPosition(0);
-            } else if (gamepad2.left_bumper) {
-                hookReleaseServo.setPosition(1);
             } else {
                 hookReleaseServo.setPosition(1);
             }
 
-            if (gamepad1.dpad_right && (System.currentTimeMillis() - timeWristControlled > 200)) {
-//                if (wristPosition < 1) {
-//                    wristPosition += 0.1;
-//                }
-                //wristServo.setPosition(1);
-            } else if (gamepad1.dpad_left && (System.currentTimeMillis() - timeWristControlled > 200)) {
-//                if (wristPosition > 0) {
-//                    wristPosition -= 0.1;
-//                }
-                //wristServo.setPosition(0.76); //WAS 0.8
-            } else {
-                //wristServo.setPosition(1);
-                //theoretically nothing should happen
-            }
-
-
-            if (gamepad1.a) {
+            if (input.dropBucketPixel) {
                 bucketServo.setPosition(1);
                 intakeMotor.setPower(-1);
-            } else if (gamepad1.b) {
+            } else if (input.pauseBucket) {
                 bucketServo.setPosition(0);
                 intakeMotor.setPower(1);
             } else {
                 bucketServo.setPosition(1);
-                intakeMotor.setPower(1); //TEMPORARY TO STOP LOUD NOISE
-                //intakeMotor.setPower(1);
+                intakeMotor.setPower(1);
             }
 
-            if (gamepad1.right_trigger > 0.05) {
+            if (input.goToDropPosition) {
                 pixelDropMode = true;
                 timePixelModeChanged = System.currentTimeMillis();
-                //time set
-            } else if (gamepad1.left_trigger > 0.05) {
+            } else if (input.goToLoadPosition) {
                 pixelDropMode = false;
                 timePixelModeChanged = System.currentTimeMillis();
-                //input mode
-                //same in reverse
             }
 
-            if (pixelDropMode) { //SET POWER FOR ALL 3
-                //begin raising armanglemotor
+            if (pixelDropMode) { // SET POWER FOR ALL 3
+                // Begin raising armAngleMotor
                 armAngleMotor.setTargetPosition(7200);
                 if ((System.currentTimeMillis() - timePixelModeChanged) > 1000) {
-                    wristServo.setPosition(0.76); //USE EXTENSION OF ARM MOTOR TO DETERMINE EXENSION
-                } //seperate if to allow separate tuning
+                    wristServo.setPosition(0.76); // USE EXTENSION OF ARM MOTOR TO DETERMINE EXENSION
+                } // Separate if to allow separate tuning
                 if ((System.currentTimeMillis() - timePixelModeChanged) > 1000) {
                     armExtensionMotor.setTargetPosition(-2000); //was -2100
                 }
 
-                //put out armextensionmotor after 200-ish mils
-                //move wristservo same time
+                //put out armExtensionMotor after 200-ish mils
+                //move wristServo same time
             } else if (!pixelDropMode) {
                 armAngleMotor.setTargetPosition(0);
                 armExtensionMotor.setTargetPosition(0);
                 wristServo.setPosition(1.0);
             }
 
-            if (gamepad1.x) {
-                //use extension test to reset position
-                //armAngleMotor.setPower(-1.0);
-            } else if (gamepad1.y) {
-                //armAngleMotor.setPower(1.0);
+            if (input.lowerPixelArm) {
+                armAngleMotor.setPower(-1.0);
+            } else if (input.liftPixelArm) {
+                armAngleMotor.setPower(1.0);
             } else {
-                //armAngleMotor.setPower(0.0);
+                armAngleMotor.setPower(0.0);
             }
 
 
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
             // Set up a variable for each drive wheel to save the power level for telemetry.
-            double leftFrontPower = axial + lateral + yaw;
-            double rightFrontPower = axial - lateral - yaw;
-            double leftBackPower = axial - lateral + yaw;
-            double rightBackPower = axial + lateral - yaw;
+            double leftFrontPower = input.axial + input.lateral + input.yaw;
+            double rightFrontPower = input.axial - input.lateral - input.yaw;
+            double leftBackPower = input.axial - input.lateral + input.yaw;
+            double rightBackPower = input.axial + input.lateral - input.yaw;
 
             // Normalize the values so no wheel power exceeds 100%.
             // This ensures that the robot maintains the desired motion.
@@ -364,7 +340,7 @@ public class DriveMode extends OpMode {
             rightBackDrive.setPower(rightBackPower);
 
             long planeLaunched = -1;
-            if (gamepad2.right_bumper) {
+            if (input.launchDrone) {
                 if (planeLaunched == -1) {
                     launchServo.setPosition(1);
                     planeLaunched = System.currentTimeMillis();
@@ -373,12 +349,8 @@ public class DriveMode extends OpMode {
             if ((System.currentTimeMillis() - planeLaunched) >= 500) {
                 launchServo.setPosition(0.85);
             }
+            
 
-            if (gamepad2.right_trigger > 0.05) {
-                hookWristServo.setPosition(1);
-            } else if (gamepad2.left_trigger > 0.05) {
-                hookWristServo.setPosition(0.67);
-            }
             sendTelemetry();
         }
     }

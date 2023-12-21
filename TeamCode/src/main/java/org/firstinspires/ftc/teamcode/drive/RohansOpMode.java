@@ -29,15 +29,7 @@
 
 package org.firstinspires.ftc.teamcode.drive;
 
-import android.renderscript.ScriptGroup;
-
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
-
-import java.util.concurrent.TimeUnit;
 
 /**
 *   This OpMode was made to accommodate Rohan's preferences regarding pressing a button to set the
@@ -52,7 +44,7 @@ public class RohansOpMode extends DriveMode {
     @Override
     protected InputMapping getInput(){
         InputMapping rohansInput = new InputMapping();
-        rohansInput.goToHookAngle = gamepad2.dpad_down;
+        rohansInput.goToHangingAngle = gamepad2.dpad_down;
         rohansInput.goToDroneAngle = gamepad2.dpad_up;
         return rohansInput;
     }
