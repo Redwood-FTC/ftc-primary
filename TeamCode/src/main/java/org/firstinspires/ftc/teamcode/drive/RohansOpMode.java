@@ -29,6 +29,8 @@
 
 package org.firstinspires.ftc.teamcode.drive;
 
+import android.renderscript.ScriptGroup;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -47,9 +49,11 @@ import java.util.concurrent.TimeUnit;
 
 @TeleOp(name="Rohan's OpMode", group="Linear Opmode")
 public class RohansOpMode extends DriveMode {
-
     @Override
-    public void loop() {
-        super.loop();
+    protected InputMapping getInput(){
+        InputMapping rohansInput = new InputMapping();
+        rohansInput.goToHookAngle = gamepad2.dpad_down;
+        rohansInput.goToDroneAngle = gamepad2.dpad_up;
+        return rohansInput;
     }
 }

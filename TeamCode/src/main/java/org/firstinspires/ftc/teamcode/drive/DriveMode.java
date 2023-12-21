@@ -168,14 +168,70 @@ public class DriveMode extends OpMode {
     protected boolean pixelDropMode = false;
     protected long timePixelModeChanged = System.currentTimeMillis();
 
+    // BROKEN
+    public class InputMapping{
+        /** Robot's forward-backward movement. Ranges from -1 to 1, inclusive. */
+        public double axial = -gamepad1.left_stick_y; // Pushing stick forward gives negative value.
+
+        /** Robot's left-right movement. Ranges from -1 to 1, inclusive. */
+        public double lateral = gamepad1.left_stick_x;
+
+        /** Robot's rotation movement. Ranges from -1 to 1, inclusive. */
+        public double yaw = gamepad1.right_stick_x;
+
+        /** Rotate hook arm to hanging angle. */
+        public boolean goToHookAngle = gamepad2.dpad_up;
+
+        /** Rotate hook arm to drone launch angle. */
+        public boolean goToDroneAngle = gamepad2.dpad_down;
+
+        /** Wind in hanging winch. */
+        public boolean windWinch = gamepad2.dpad_right;
+        /** Unwind hanging winch. */
+        public boolean unwindWinch = gamepad2.dpad_left;
+
+        /** Raise the intake off of the floor. */
+        public boolean raiseIntake = gamepad2.a;
+
+        /** Release the hook. */
+        public boolean releaseHook = gamepad2.b;
+
+        /** Drop pixels from the bucket. */
+        public boolean dropBucketPixel = gamepad1.a;
+
+        /** Pause bucket wheel spinning */
+        public boolean pauseBucket = gamepad1.b;
+
+        /** Move pixel arm to drop position. */
+        public boolean goToDropPosition = gamepad1.right_trigger > 0.05;
+
+        /** Move pixel arm to load position. */
+        public boolean goToLoadPosition = gamepad1.left_trigger > 0.05;
+
+        /** Lift the pixel arm. */
+        public boolean liftPixelArm = gamepad1.y;
+
+
+        /** Lower the pixel arm. */
+        public boolean lowerPixelArm = gamepad1.x;
+
+        /** Launch the drone. */
+        public boolean launchDrone = gamepad2.right_bumper;
+    }
+
+    protected InputMapping getInput(){
+        return new InputMapping();
+    }
     @Override
     public void loop() {
         double maxDriveMotorPower;
 
+        InputMapping input = getInput();
+
         // POV Mode uses left joystick to go forward (up/down) & strafe (left/right), and right
         // joystick to rotate (left/right.
 
-        if (gamepad2.dpad_up) {
+        if (input.goToHookAngle) {
             hookAngleServo.setPosition(0.17); //go to hook (TEMP VALUE)
         } else if (gamepad2.dpad_down) {
             hookAngleServo.setPosition(0.7); //go to plane (TEMP VALUE)
@@ -280,9 +336,6 @@ public class DriveMode extends OpMode {
                 //armAngleMotor.setPower(0.0);
             }
 
-            double axial = -gamepad1.left_stick_y; // Pushing stick forward gives negative value.
-            double lateral = gamepad1.left_stick_x;
-            double yaw = gamepad1.right_stick_x;
 
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
             // Set up a variable for each drive wheel to save the power level for telemetry.
