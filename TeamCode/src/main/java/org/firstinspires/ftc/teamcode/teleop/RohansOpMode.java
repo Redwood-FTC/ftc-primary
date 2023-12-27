@@ -27,26 +27,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.drive;
+package org.firstinspires.ftc.teamcode.teleop;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
-
-import java.util.concurrent.TimeUnit;
 
 /**
- * This OpMode was made for Ayansh because he wanted his own control scheme.
- * <p>
- * THIS IS NOT UP TO DATE, DON'T USE THIS!!
- */
-@TeleOp(name="Ayansh's OpMode", group="Linear Opmode")
-public class AyanshsOpMode extends DriveMode {
+*   This OpMode was made to accommodate Rohan's preferences regarding pressing a button to set the
+*   pixel arm to a set position when placing pixels on the backboard. He would rather have the pixel
+*   arm be manual for more flexibility.
+*  <p>
+*   THIS IS NOT UP TO DATE, DON'T USE THIS!!
+*/
 
+@TeleOp(name="Rohan's OpMode", group="Linear Opmode")
+public class RohansOpMode extends DriveMode {
     @Override
-    public void loop() {
-        super.loop();
+    protected InputMapping getInput(){
+        InputMapping rohansInput = new InputMapping();
+        rohansInput.goToHangingAngle = gamepad2.dpad_down;
+        rohansInput.goToDroneAngle = gamepad2.dpad_up;
+        return rohansInput;
     }
 }
