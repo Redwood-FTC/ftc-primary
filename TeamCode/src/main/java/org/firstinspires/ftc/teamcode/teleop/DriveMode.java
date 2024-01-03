@@ -29,11 +29,14 @@
 
 package org.firstinspires.ftc.teamcode.teleop;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.teamcode.autonomous.AutonomousMode;
 
 import java.util.concurrent.TimeUnit;
 
@@ -103,16 +106,16 @@ public class DriveMode extends OpMode {
     protected final double loadBucketPixelPosition = 0.0;
 
     /* Settable positions/powers used in performActions() */
-    private double hookAngleServoPosition = 0.0;
-    private double winchMotorPower = 0.0;
-    private double intakeAngleServoPosition = 0.0;
-    private double hookReleaseServoPosition = 0.0;
-    private double bucketServoPosition = 0.0;
+    protected double hookAngleServoPosition = 0.0;
+    protected double winchMotorPower = 0.0;
+    protected double intakeAngleServoPosition = 0.0;
+    protected double hookReleaseServoPosition = 0.0;
+    protected double bucketServoPosition = 0.0;
 
-    private double leftFrontDrivePower = 0.0;
-    private double rightFrontDrivePower = 0.0;
-    private double leftBackDrivePower = 0.0;
-    private double rightBackDrivePower = 0.0;
+    protected double leftFrontDrivePower = 0.0;
+    protected double rightFrontDrivePower = 0.0;
+    protected double leftBackDrivePower = 0.0;
+    protected double rightBackDrivePower = 0.0;
 
     @Override
     public void init() {
@@ -161,7 +164,7 @@ public class DriveMode extends OpMode {
         hookAngleServo.setPosition(0.8);
 
         launchServo = hardwareMap.get(Servo.class, "launch_servo");
-        launchServo.setPosition(0.85);
+        launchServo.setPosition(0.743);
 
         wristServo = hardwareMap.get(Servo.class, "wrist_servo");
         wristServo.setPosition(1);
@@ -361,7 +364,7 @@ public class DriveMode extends OpMode {
                 } //after plane is launched, same button moves the servo back
             }
             if ((System.currentTimeMillis() - planeLaunched) >= 500) {
-                launchServo.setPosition(0.85);
+                launchServo.setPosition(0.743);
             }
 
             performActions();
