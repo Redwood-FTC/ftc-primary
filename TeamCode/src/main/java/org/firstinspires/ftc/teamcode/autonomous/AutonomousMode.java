@@ -4,19 +4,13 @@ import static java.lang.Thread.sleep;
 
 import android.graphics.Color;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
-import com.fasterxml.jackson.databind.annotation.JsonAppend;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
@@ -24,6 +18,7 @@ import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.drive.RobotOneMecanumDrive;
 import org.firstinspires.ftc.teamcode.teleop.DriveMode;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
+import org.firstinspires.ftc.teamcode.util.Logger;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
@@ -97,12 +92,17 @@ public class AutonomousMode extends DriveMode {
         super.start();
         startTime = System.currentTimeMillis();
     }
+
+    private boolean purplePixelDropped = false;
+    private boolean atBackdrop = false;
     @Override
-    public void loop(){
-        while (teamPropPosition == PropPosition.UNKNOWN){
+    public void loop()  {
+        while (teamPropPosition.equals(PropPosition.UNKNOWN)) {
+            Logger.message("Looking for team prop position...");
             // If we run out of time, assume the team prop is on the right.
             long timeSinceStart = System.currentTimeMillis() - startTime;
-            if (timeSinceStart < maxSignalDelay){
+            if (timeSinceStart > maxSignalDelay) {
+                Logger.message("Ran out of time, assuming team prop is RIGHT.");
                 teamPropPosition = PropPosition.RIGHT;
                 break;
             }
@@ -110,35 +110,31 @@ public class AutonomousMode extends DriveMode {
             List<Recognition> currentRecognitions = tfod.getRecognitions();
             // Step through the list of recognitions and display info for each one.
             for (Recognition recognition : currentRecognitions) {
-                double x = (recognition.getLeft() + recognition.getRight()) / 2 ;
-                double y = (recognition.getTop()  + recognition.getBottom()) / 2 ;
-                if (x < leftCenterDivider){
+                double x = (recognition.getLeft() + recognition.getRight()) / 2;
+                double y = (recognition.getTop() + recognition.getBottom()) / 2;
+                if (x < leftCenterDivider) {
+                    Logger.message("Team prop identified at LEFT.");
                     teamPropPosition = PropPosition.LEFT;
                 } else {
+                    Logger.message("Team prop identified at CENTER.");
                     teamPropPosition = PropPosition.CENTER;
                 }
                 break;
             }
         }
-        TrajectorySequenceBuilder toSignalTileTrajectoryBuilder = drive.trajectorySequenceBuilder(new Pose2d())
-                .forward(1 * TILE_WIDTH);
-        Trajectory postSignalTrajectory;
-        switch(teamPropPosition){
-            case LEFT:
-                 toSignalTileTrajectoryBuilder
-                         .turn(Math.PI / 2);
-                break;
-            case RIGHT:
-            default:
-                toSignalTileTrajectoryBuilder
-                        .turn(-Math.PI / 2);
-                break;
-            case CENTER:
-                break;
-        }
-        drive.followTrajectorySequence(toSignalTileTrajectoryBuilder.build());
 
-        dropPurplePixel(teamPropPosition);
+         if (!purplePixelDropped) {
+             dropPurplePixel();
+             purplePixelDropped = true;
+        }
+
+         if (!atBackdrop){
+            goToBackdrop();
+            dropYellowPixel();
+            atBackdrop = true;
+        }
+
+
 
 //        drive.followTrajectorySequence(
 //                drive.trajectorySequenceBuilder(drive.getPoseEstimate())
@@ -234,7 +230,43 @@ public class AutonomousMode extends DriveMode {
             gainControl.setGain(gain);
     }
 
-    protected void dropPurplePixel(PropPosition position) {
+    @Override
+    protected void sendTelemetry(){
+        NormalizedRGBA colors = colorSensor.getNormalizedColors();
+        Color.colorToHSV(colors.toColor(), hsvValues);
+        /* Logic to what color tape it is over. */
+        float saturation = hsvValues[1];
+        boolean onTape = (saturation >= 0.6) || (colors.red > 0.04);
+
+        telemetry.addData("color sensor values 0: ", hsvValues[0]);
+        telemetry.addData("color sensor values 1: ", hsvValues[1]);
+        telemetry.addData("color sensor values 2: ", hsvValues[2]);
+        telemetry.addData("saturation: ", saturation);
+        telemetry.addData("onTape?: ", onTape);
+        super.sendTelemetry();
+    }
+
+    private void dropPurplePixel() {
+        Logger.message("Dropping purple pixel.");
+        TrajectorySequenceBuilder toSignalTileTrajectoryBuilder = drive.trajectorySequenceBuilder(new Pose2d())
+                .forward(1 * TILE_WIDTH);
+        Trajectory postSignalTrajectory;
+        switch(teamPropPosition){
+            case LEFT:
+                toSignalTileTrajectoryBuilder
+//                        .strafeLeft(1.2 * TILE_WIDTH);
+                        .turn(Math.PI / 2);
+                break;
+            case RIGHT:
+            default:
+                toSignalTileTrajectoryBuilder
+//                        .strafeRight(1.2 * TILE_WIDTH);
+                        .turn(-Math.PI / 2);
+                break;
+            case CENTER:
+                break;
+        }
+        drive.followTrajectorySequence(toSignalTileTrajectoryBuilder.build());
         purplePixelServo.setPosition(PIXEL_DROPPED);
 
 //        boolean turnLeftToBackdrop = false;
@@ -268,5 +300,48 @@ public class AutonomousMode extends DriveMode {
         //purplePixelServo.setPosition(PIXEL_POST_DROP);
 
         //move backwards to get out of way
+    }
+
+    private void goToBackdrop() {
+        TrajectorySequenceBuilder trajectorySequenceBuilder = drive.trajectorySequenceBuilder(drive.getPoseEstimate());
+        switch (STARTING_POSITION){
+            case BACKSTAGE:
+                switch(ALLIANCE){
+                    case RED:
+                        switch(teamPropPosition){
+                            case LEFT:
+                                trajectorySequenceBuilder.turn(-Math.PI);
+                                break;
+                            case CENTER:
+                                trajectorySequenceBuilder.turn(-Math.PI / 2);
+                                break;
+                        }
+                        break;
+                    case BLUE:
+                        switch(teamPropPosition){
+                            case RIGHT:
+                                trajectorySequenceBuilder.turn(Math.PI);
+                                break;
+                            case CENTER:
+                                trajectorySequenceBuilder.turn(Math.PI / 2);
+                                break;
+                        }
+                        break;
+                }
+                trajectorySequenceBuilder.forward(1.5 * TILE_WIDTH);
+                break;
+        }
+
+        drive.followTrajectorySequence(trajectorySequenceBuilder.build());
+    }
+
+    private void dropYellowPixel(){
+        armAngleMotor.setTargetPosition(7200);
+        long currentTime = System.currentTimeMillis();
+        while (currentTime - System.currentTimeMillis() < 1000);
+        wristServo.setPosition(0.76); // USE EXTENSION OF ARM MOTOR TO DETERMINE EXENSION
+        armExtensionMotor.setTargetPosition(-2000);
+
+        bucketServo.setPosition(dropBucketPixelPosition);
     }
 }
