@@ -224,6 +224,7 @@ public class DriveMode extends OpMode {
 
         /** Release the hook. */
         public boolean releaseHook = gamepad2.b;
+        public boolean tightenHook = gamepad2.x;
 
         /** Drop pixels from the bucket. */
         public boolean dropBucketPixel = gamepad1.a;
@@ -284,10 +285,15 @@ public class DriveMode extends OpMode {
             // Test code for intake_angle_servo
             // Remember to find correct values later
 
-            if (input.releaseHook) {
-                hookReleaseServoPosition = releasedHookPosition;
-            } else {
-                hookReleaseServoPosition = heldHookPosition;
+//            if (input.releaseHook) {
+//                hookReleaseServoPosition = releasedHookPosition;
+//            } else {
+//                hookReleaseServoPosition = heldHookPosition;
+//            }
+            if (input.releaseHook){
+                hookReleaseServoPosition += 0.01;
+            } else if (input.tightenHook){
+                hookReleaseServoPosition -= 0.01;
             }
 
             if (input.dropBucketPixel) {
@@ -393,6 +399,7 @@ public class DriveMode extends OpMode {
      * Send telemetry about robot state back to Driver Station.
      */
     protected void sendTelemetry() {
+        telemetry.addData("hookReleaseServo value: ", hookReleaseServo.getPosition());
         telemetry.addData("Extension_Motor encoder value: ", armExtensionMotor.getCurrentPosition());
         telemetry.addData("Angle_Motor encoder value: ", armAngleMotor.getCurrentPosition());
         telemetry.addData("Angle_Intake_Servo encoder value: ", intakeAngleServo.getPosition());
