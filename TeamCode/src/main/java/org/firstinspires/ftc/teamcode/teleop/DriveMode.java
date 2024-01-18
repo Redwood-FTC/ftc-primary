@@ -104,7 +104,7 @@ public class DriveMode extends OpMode {
     public static double hookWristDroneAngle = 0.63; // temp value
     public static double unwindWinchPower = -1.0;
     public static double windWinchPower = 1.0;
-    public static double raisedIntakePosition = 1.0;
+    public static double raisedIntakePosition = 0.2;
     public static double loweredIntakePosition = 0.0;
     public static double releasedHookPosition = 0.4;
     public static double heldHookPosition = 0.46;
@@ -115,6 +115,7 @@ public class DriveMode extends OpMode {
     /* Settable positions/powers used in performActions() */
     protected double hookAngleServoPosition = 0.0;
     protected double timeIntakeSet = runtime.milliseconds();
+    protected double timeIntakeAngleSet = runtime.milliseconds();
     protected double hookWristServoPosition = 0.0;
     protected double winchMotorPower = 0.0;
     protected double intakeAngleServoPosition = 0.0;
@@ -229,9 +230,6 @@ public class DriveMode extends OpMode {
         /** Rotate hook arm to fully lowered angle, to allow going under the bars*/
         public boolean goToLoweredAngle = gamepad2.y;
 
-        public boolean goToPostReleaseAngle = false; //not bound to button. ideally we would have a
-        //state machine setup that enables a good way to manually do this.
-
         /** Wind in hanging winch. */
         public boolean windWinch = gamepad2.dpad_right;
         /** Unwind hanging winch. */
@@ -281,7 +279,7 @@ public class DriveMode extends OpMode {
         if (input.releaseHook  && (hookAngleServoPosition == hookArmHangingAngle)) {
             hookReleaseServoPosition = releasedHookPosition;
             //input.goToLoweredAngle = true;
-            input.goToPostReleaseAngle = true;
+            hookAngleServoPosition = hookArmPostReleaseAngle;
         } else {
             hookReleaseServoPosition = heldHookPosition;
         }
@@ -318,8 +316,9 @@ public class DriveMode extends OpMode {
 
         // Test code for intake_angle_servo
         // Remember to find correct values later
-        if (input.toggleIntakeAngle) {
-//            intakeAngleServoPosition = raisedIntakePosition;
+        if (false) {
+//            //intakeAngleServoPosition = raisedIntakePosition;
+            //disabled in favor of raising when toggling
         } else if (runtime.now(TimeUnit.MILLISECONDS) > 700) {
             intakeAngleServoPosition = loweredIntakePosition;
 
@@ -329,6 +328,11 @@ public class DriveMode extends OpMode {
             if (input.toggleIntake && runtime.milliseconds() - timeIntakeSet > 350) {
                 timeIntakeSet = runtime.milliseconds();
                 intakeOn = (intakeOn == true ? false : true);
+            }
+
+            if (input.toggleIntakeAngle && runtime.milliseconds() - timeIntakeAngleSet > 150) {
+                timeIntakeAngleSet = runtime.milliseconds();
+                intakeAngleServoPosition = raisedIntakePosition;
             }
 
             if (intakeOn) {
