@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.autonomous;
 import static java.lang.Thread.sleep;
 
 import android.graphics.Color;
+import android.util.Log;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -88,8 +89,6 @@ public class AutonomousMode extends DriveMode {
         /* Camera Setup Start */
         initTfod();
 //      Initialize the Apriltag Detection process
-//        initAprilTag();
-//        setManualExposure(6, 250); // Use low exposure time to reduce motion blur
 //        Camera Setup End
 
         float gain = 3;
@@ -116,7 +115,6 @@ public class AutonomousMode extends DriveMode {
 
         TrajectorySequenceBuilder toBoard = drive.trajectorySequenceBuilder(new Pose2d())
                 .forward(1 * TILE_WIDTH);
-//        drive.followTrajectorySequence(toBoard.build());
 
         while (teamPropPosition == PropPosition.UNKNOWN){
             // If we run out of time, assume the team prop is on the right.
@@ -139,6 +137,13 @@ public class AutonomousMode extends DriveMode {
                 break;
             }
         }
+
+        // dropPurplePixel(teamPropPosition);
+
+        // Finished with TFOD, switching to AprilTag detector
+        initAprilTag();
+        setManualExposure(6, 250); // Use low exposure time to reduce motion blur
+
         telemetry.addData("Signal:",teamPropPosition);
         TrajectorySequenceBuilder toSignalTileTrajectoryBuilder = drive.trajectorySequenceBuilder(new Pose2d())
                 .forward(1.7 * TILE_WIDTH); //go to middle of tile
@@ -156,6 +161,19 @@ public class AutonomousMode extends DriveMode {
                 telemetry.addLine("default");
                 break;
         }
+        boolean targetFound = false;
+        while (!targetFound) {
+            // Step through the list of detected tags and look for a matching tag
+            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+            for (AprilTagDetection detection : currentDetections) {
+                if (detection.metadata != null) {
+                    targetFound = true;
+                    desiredTag = detection;
+                    break;  // don't look any further.
+                }
+            }
+        }
+        Log.d("TARGET","TARGET FOUND");
 
         switch (teamPropPosition) {
             case LEFT:
@@ -202,7 +220,6 @@ public class AutonomousMode extends DriveMode {
         }
         // drive.followTrajectorySequence(toSignalTileTrajectoryBuilder.build());
 
-        // dropPurplePixel(teamPropPosition);
 
         if (getStartingPosition() == StartingPosition.BACKSTAGE) {
             drive.followTrajectorySequence(toBoard.build());
