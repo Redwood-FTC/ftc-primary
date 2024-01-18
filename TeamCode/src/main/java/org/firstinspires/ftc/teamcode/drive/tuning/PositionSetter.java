@@ -59,6 +59,8 @@ public class PositionSetter extends LinearOpMode {
     private DcMotor winchMotor = null;
     private DcMotor armExtensionMotor = null;
     private Servo hookReleaseServo = null;
+    private Servo hookAngleServo = null;
+    private Servo lauchServo = null;
 
     @Override
     public void runOpMode() {
@@ -74,6 +76,9 @@ public class PositionSetter extends LinearOpMode {
         armAngleMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         armAngleMotor.setPower(0);
         armAngleMotor.setTargetPosition(0);
+
+        lauchServo = hardwareMap.get(Servo.class, "launch_servo");
+        lauchServo.setPosition(0.743);
 
         armExtensionMotor = hardwareMap.get(DcMotor.class, "arm_extension_motor");
         armExtensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -92,6 +97,8 @@ public class PositionSetter extends LinearOpMode {
 
         hookReleaseServo = hardwareMap.get(Servo.class, "hook_release_servo");
 
+        hookAngleServo = hardwareMap.get(Servo.class,"hook_angle_servo");
+
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
@@ -106,6 +113,8 @@ public class PositionSetter extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
+        double hookAngleServoPosition = 0;
+        long timeSinceSet = System.currentTimeMillis();
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             if (gamepad1.x) {
@@ -142,11 +151,32 @@ public class PositionSetter extends LinearOpMode {
                 hookReleaseServo.setPosition(1);
             }
 
+            if (gamepad1.a) {
+                lauchServo.setPosition(1.0);
+            } else if (gamepad1.b) {
+                lauchServo.setPosition(0.743);
+            }
+
+
+            if (gamepad1.dpad_up && System.currentTimeMillis() - timeSinceSet > 100) { // miliseconds
+                timeSinceSet = System.currentTimeMillis();
+                hookAngleServoPosition += 0.01;
+            }
+
+            if (gamepad1.dpad_down && System.currentTimeMillis() - timeSinceSet > 100) { // miliseconds
+                timeSinceSet = System.currentTimeMillis();
+                hookAngleServoPosition -= 0.01;
+            }
+
+            hookAngleServo.setPosition(hookAngleServoPosition);
+
+            telemetry.addData("hook position VARIABLE", hookAngleServoPosition);
             telemetry.addData("hookReleasePosition", hookReleaseServo.getPosition());
             telemetry.addData("amount_tilted", armAngleMotor.getCurrentPosition());
             telemetry.addData("amount_arm_extended", armExtensionMotor.getCurrentPosition());
             telemetry.addData("amount_extended", extensionMotor.getCurrentPosition());
             telemetry.addData("Winch_Motor_encoder value", winchMotor.getCurrentPosition());
+            telemetry.addData("Hook_Angle_Servo",hookAngleServo.getPosition());
             telemetry.update();
         }
     }

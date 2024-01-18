@@ -29,14 +29,12 @@
 
 package org.firstinspires.ftc.teamcode.teleop;
 
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
-import org.firstinspires.ftc.teamcode.autonomous.AutonomousMode;
 
 import java.util.concurrent.TimeUnit;
 
@@ -68,7 +66,8 @@ import java.util.concurrent.TimeUnit;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name = "Drive Mode", group = "Linear Opmode")
+@TeleOp(name = "Drive Mode", group = "Opmode")
+@Config
 public class DriveMode extends OpMode {
 
     // Declare OpMode members for each of the 4 motors.
@@ -91,26 +90,37 @@ public class DriveMode extends OpMode {
     protected Servo hookWristServo = null;
 
     /* "Magic number" constants for physical positions. */
-    protected final double stoppedMotorPower = 0.0;
-    protected final double stoppedContinuousServoPosition = 0.5;
-    protected final double hookArmHangingAngle = 0.17;
-    protected final double hookArmDroneAngle = 0.7;
-    protected final double unwindWinchPower = -1.0;
-    protected final double windWinchPower = 1.0;
-    protected final double raisedIntakePosition = 1.0;
-    protected final double loweredIntakePosition = 0.0;
-    protected final double releasedHookPosition = 0.0;
-    protected final double heldHookPosition = 1.0;
-    protected final double dropBucketPixelPosition = 1.0;
-    protected final double pauseBucketPixelPosition = 0.5;
-    protected final double loadBucketPixelPosition = 0.0;
+    // public statics are configurable in dashboard
+    public static double stoppedMotorPower = 0.0;
+    public static double stoppedContinuousServoPosition = 0.5;
+    public static double hookArmHangingAngle = 0.6;
+    public static double hookArmDroneAngle = 0.62;
+    public static double hookArmLoweredAngle = 0.85; // uncertain value
+    public static double hookArmPostReleaseAngle = 0.35; // uncertain value
+    public static double hookArmInitialAngle = hookArmLoweredAngle;
+    public static double hookWristHangingAngle = 0.15; // temp value
+    public static double hookWristLoweredAngle = 0.615;
+    public static double hookWristInitialAngle = hookWristLoweredAngle;
+    public static double hookWristDroneAngle = 0.63; // temp value
+    public static double unwindWinchPower = -1.0;
+    public static double windWinchPower = 1.0;
+    public static double raisedIntakePosition = 1.0;
+    public static double loweredIntakePosition = 0.0;
+    public static double releasedHookPosition = 0.4;
+    public static double heldHookPosition = 0.46;
+    public static double dropBucketPixelPosition = 0.0;
+    public static double loadBucketPixelPosition = 1.0;
+    public static double droneHeldPosition = 0.743;
 
     /* Settable positions/powers used in performActions() */
     protected double hookAngleServoPosition = 0.0;
+    protected double timeIntakeSet = runtime.milliseconds();
+    protected double hookWristServoPosition = 0.0;
     protected double winchMotorPower = 0.0;
     protected double intakeAngleServoPosition = 0.0;
     protected double hookReleaseServoPosition = 0.0;
     protected double bucketServoPosition = 0.0;
+    protected boolean intakeOn = false;
 
     protected double leftFrontDrivePower = 0.0;
     protected double rightFrontDrivePower = 0.0;
@@ -152,41 +162,43 @@ public class DriveMode extends OpMode {
         intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
         intakeMotor.setPower(0);
 
-        intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
-        intakeMotor.setPower(0);
-
         winchMotor = hardwareMap.get(DcMotor.class, "winch_motor");
         winchMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         // Motor Initialization END
 
         // Servo Initialization START
+        // Hook/drone arm
         hookAngleServo = hardwareMap.get(Servo.class, "hook_angle_servo");
-        hookAngleServo.setPosition(0.8);
+        hookAngleServoPosition = hookArmInitialAngle;
 
         launchServo = hardwareMap.get(Servo.class, "launch_servo");
-        launchServo.setPosition(0.743);
-
-        wristServo = hardwareMap.get(Servo.class, "wrist_servo");
-        wristServo.setPosition(1);
-
-        bucketServo = hardwareMap.get(Servo.class, "bucket_servo");
-        bucketServo.setPosition(0.5);
-
-        intakeAngleServo = hardwareMap.get(Servo.class, "intake_angle_servo");
-        intakeAngleServo.setPosition(1);
+        launchServo.setPosition(droneHeldPosition);
 
         hookWristServo = hardwareMap.get(Servo.class, "hook_wrist_servo");
-        hookWristServo.setPosition(1.0); //was .25
+        hookWristServoPosition = hookWristInitialAngle;
 
         hookReleaseServo = hardwareMap.get(Servo.class, "hook_release_servo");
-        hookReleaseServo.setPosition(1);
+        hookReleaseServoPosition = heldHookPosition;
+
+        // Pixel arm
+        wristServo = hardwareMap.get(Servo.class, "wrist_servo");
+        //wristServo.setPosition(1.0);
+
+        bucketServo = hardwareMap.get(Servo.class, "bucket_servo");
+        bucketServoPosition = stoppedContinuousServoPosition;
+
+        intakeAngleServo = hardwareMap.get(Servo.class, "intake_angle_servo");
+        intakeAngleServoPosition = 1;
+
         // Servo Initialization END
+
+        runtime.reset();
     }
 
     @Override
     public void init_loop() {
-        telemetry.addData("Status", "Initialized");
-        telemetry.update();
+        performActions();
+        sendTelemetry();
     }
 
     @Override
@@ -214,23 +226,30 @@ public class DriveMode extends OpMode {
         /** Rotate hook arm to drone launch angle. */
         public boolean goToDroneAngle = gamepad2.dpad_down;
 
+        /** Rotate hook arm to fully lowered angle, to allow going under the bars*/
+        public boolean goToLoweredAngle = gamepad2.y;
+
+        public boolean goToPostReleaseAngle = false; //not bound to button. ideally we would have a
+        //state machine setup that enables a good way to manually do this.
+
         /** Wind in hanging winch. */
         public boolean windWinch = gamepad2.dpad_right;
         /** Unwind hanging winch. */
         public boolean unwindWinch = gamepad2.dpad_left;
 
         /** Raise the intake off of the floor. */
-        public boolean raiseIntake = gamepad2.a;
+        public boolean toggleIntakeAngle = gamepad1.left_bumper;
 
         /** Release the hook. */
-        public boolean releaseHook = gamepad2.b;
-        public boolean tightenHook = gamepad2.x;
+        public boolean releaseHook = gamepad2.x;
 
         /** Drop pixels from the bucket. */
         public boolean dropBucketPixel = gamepad1.a;
 
         /** Pause bucket wheel spinning */
-        public boolean pauseBucket = gamepad1.b;
+        public boolean reverseIntake = gamepad1.b;
+
+        public boolean toggleIntake = gamepad1.right_bumper;
 
         /** Move pixel arm to drop position. */
         public boolean goToDropPosition = gamepad1.right_trigger > 0.05;
@@ -239,10 +258,10 @@ public class DriveMode extends OpMode {
         public boolean goToLoadPosition = gamepad1.left_trigger > 0.05;
 
         /** Lift the pixel arm. */
-        public boolean liftPixelArm = gamepad1.y;
+        //public boolean liftPixelArm = gamepad1.y;
 
         /** Lower the pixel arm. */
-        public boolean lowerPixelArm = gamepad1.x;
+        //public boolean lowerPixelArm = gamepad1.x;
 
         /** Launch the drone. */
         public boolean launchDrone = gamepad2.right_bumper;
@@ -251,6 +270,7 @@ public class DriveMode extends OpMode {
     protected InputMapping getInput() {
         return new InputMapping();
     }
+    double timeGoToLoweredAngle = -1;
 
     @Override
     public void loop() {
@@ -258,15 +278,36 @@ public class DriveMode extends OpMode {
 
         InputMapping input = getInput();
 
+        if (input.releaseHook  && (hookAngleServoPosition == hookArmHangingAngle)) {
+            hookReleaseServoPosition = releasedHookPosition;
+            //input.goToLoweredAngle = true;
+            input.goToPostReleaseAngle = true;
+        } else {
+            hookReleaseServoPosition = heldHookPosition;
+        }
+
         // POV Mode uses left joystick to go forward (up/down) & strafe (left/right), and right
         // joystick to rotate (left/right.
 
-        if (input.goToHangingAngle) {
+        if (input.goToHangingAngle && !pixelDropMode) {
+            timeGoToLoweredAngle = -1;
             hookAngleServoPosition = hookArmHangingAngle;
-        } else if (input.goToDroneAngle) {
+            hookWristServoPosition = hookWristHangingAngle;
+        } else if (input.goToDroneAngle && !pixelDropMode) {
             hookAngleServoPosition = hookArmDroneAngle;
+            hookWristServoPosition = hookWristDroneAngle;
+        } else if (input.goToLoweredAngle) {
+            timeGoToLoweredAngle = runtime.milliseconds();
+            hookWristServoPosition = hookWristLoweredAngle;
+        }
+        if (timeGoToLoweredAngle > 0 &&
+                (runtime.milliseconds() - timeGoToLoweredAngle > 300
+                || hookAngleServoPosition == hookArmDroneAngle)) {
+            hookAngleServoPosition = hookArmLoweredAngle;
+            timeGoToLoweredAngle = -1;
         }
 
+        // && hookAngleServo.getPosition() == hookArmHangingAngle
         if (input.unwindWinch) {
             winchMotorPower = unwindWinchPower;
         } else if (input.windWinch) {
@@ -277,39 +318,41 @@ public class DriveMode extends OpMode {
 
         // Test code for intake_angle_servo
         // Remember to find correct values later
-        if (input.raiseIntake) {
-            intakeAngleServoPosition = raisedIntakePosition;
+        if (input.toggleIntakeAngle) {
+//            intakeAngleServoPosition = raisedIntakePosition;
         } else if (runtime.now(TimeUnit.MILLISECONDS) > 700) {
             intakeAngleServoPosition = loweredIntakePosition;
 
             // Test code for intake_angle_servo
             // Remember to find correct values later
 
-//            if (input.releaseHook) {
-//                hookReleaseServoPosition = releasedHookPosition;
-//            } else {
-//                hookReleaseServoPosition = heldHookPosition;
-//            }
-            if (input.releaseHook){
-                hookReleaseServoPosition += 0.01;
-            } else if (input.tightenHook){
-                hookReleaseServoPosition -= 0.01;
+            if (input.toggleIntake && runtime.milliseconds() - timeIntakeSet > 350) {
+                timeIntakeSet = runtime.milliseconds();
+                intakeOn = (intakeOn == true ? false : true);
+            }
+
+            if (intakeOn) {
+                intakeMotor.setPower(1);
+            } else {
+                intakeMotor.setPower(0);
             }
 
             if (input.dropBucketPixel) {
                 bucketServoPosition = dropBucketPixelPosition;
+                //intakeMotor.setPower(1);
+            } else if (input.reverseIntake && intakeOn) {
+                bucketServoPosition = loadBucketPixelPosition;
                 intakeMotor.setPower(-1);
-            } else if (input.pauseBucket) {
-                bucketServoPosition = pauseBucketPixelPosition;
-                intakeMotor.setPower(1);
             } else {
                 bucketServoPosition = loadBucketPixelPosition;
-                intakeMotor.setPower(1);
+                //intakeMotor.setPower(1);
             }
 
+            // && !pixelDropMode && armAngleMotor.getCurrentPosition() == hookArmLoweredAngle
             if (input.goToDropPosition) {
                 pixelDropMode = true;
                 timePixelModeChanged = System.currentTimeMillis();
+                // && pixelDropMode
             } else if (input.goToLoadPosition) {
                 pixelDropMode = false;
                 timePixelModeChanged = System.currentTimeMillis();
@@ -333,13 +376,13 @@ public class DriveMode extends OpMode {
                 wristServo.setPosition(1.0);
             }
 
-            if (input.lowerPixelArm) {
-                armAngleMotor.setPower(-1.0);
-            } else if (input.liftPixelArm) {
-                armAngleMotor.setPower(1.0);
-            } else {
-                armAngleMotor.setPower(0.0);
-            }
+//            if (input.lowerPixelArm) {
+//                armAngleMotor.setPower(-1.0);
+//            } else if (input.liftPixelArm) {
+//                armAngleMotor.setPower(1.0);
+//            } else {
+//                armAngleMotor.setPower(0.0);
+//            }
 
 
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
@@ -370,7 +413,7 @@ public class DriveMode extends OpMode {
                 } //after plane is launched, same button moves the servo back
             }
             if ((System.currentTimeMillis() - planeLaunched) >= 500) {
-                launchServo.setPosition(0.743);
+                launchServo.setPosition(droneHeldPosition);
             }
 
             performActions();
@@ -384,6 +427,7 @@ public class DriveMode extends OpMode {
      */
     protected void performActions() {
         hookAngleServo.setPosition(hookAngleServoPosition);
+        hookWristServo.setPosition(hookWristServoPosition);
         winchMotor.setPower(winchMotorPower);
         intakeAngleServo.setPosition(intakeAngleServoPosition);
         hookReleaseServo.setPosition(hookReleaseServoPosition);
@@ -399,6 +443,9 @@ public class DriveMode extends OpMode {
      * Send telemetry about robot state back to Driver Station.
      */
     protected void sendTelemetry() {
+        telemetry.addData("wristServo value: ", wristServo.getPosition());
+        telemetry.addData("hookWristServo value: ", hookWristServo.getPosition());
+        telemetry.addData("hookAngleServo value: ", hookAngleServo.getPosition());
         telemetry.addData("hookReleaseServo value: ", hookReleaseServo.getPosition());
         telemetry.addData("Extension_Motor encoder value: ", armExtensionMotor.getCurrentPosition());
         telemetry.addData("Angle_Motor encoder value: ", armAngleMotor.getCurrentPosition());
@@ -406,6 +453,5 @@ public class DriveMode extends OpMode {
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontDrive.getPower(), rightFrontDrive.getPower());
         telemetry.addData("Back left/Right", "%4.2f, %4.2f", leftBackDrive.getPower(), rightBackDrive.getPower());
-        telemetry.update();
     }
 }

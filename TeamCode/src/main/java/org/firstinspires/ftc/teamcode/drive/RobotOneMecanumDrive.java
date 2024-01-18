@@ -283,7 +283,7 @@ public class RobotOneMecanumDrive extends MecanumDrive {
     }
 
     @Override
-    public void setMotorPowers(double leftFrontPower, double rightFrontPower, double leftRearPower, double rightRearPower) {
+    public void setMotorPowers(double leftFrontPower, double leftRearPower, double rightRearPower, double rightFrontPower) {
         leftFront.setPower(leftFrontPower);
         rightFront.setPower(rightFrontPower);
         leftRear.setPower(leftRearPower);

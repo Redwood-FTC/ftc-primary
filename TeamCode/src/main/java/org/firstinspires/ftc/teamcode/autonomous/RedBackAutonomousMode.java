@@ -4,6 +4,13 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 @Autonomous(name = "RED BACKSTAGE Autonomous Mode")
 public class RedBackAutonomousMode extends AutonomousMode{
-    protected static Alliance ALLIANCE = Alliance.RED;
-    protected static StartingPosition STARTING_POSITION = StartingPosition.BACKSTAGE;
+    @Override
+    protected Alliance getAlliance() {
+        return Alliance.RED;
+    }
+
+    @Override
+    protected StartingPosition getStartingPosition() {
+        return StartingPosition.BACKSTAGE;
+    }
 }

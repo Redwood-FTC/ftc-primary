@@ -42,22 +42,31 @@ public class AutonomousMode extends DriveMode {
         RED,
         BLUE
     }
-    protected static Alliance ALLIANCE = Alliance.UNKNOWN;
+//    protected Alliance ALLIANCE = Alliance.UNKNOWN;
+    protected Alliance getAlliance() {
+        return Alliance.UNKNOWN;
+    }
+
     protected enum StartingPosition {
         UNKNOWN,
         FRONTSTAGE,
         BACKSTAGE
     }
-    protected static StartingPosition STARTING_POSITION = StartingPosition.UNKNOWN;
+    protected StartingPosition getStartingPosition() {
+        return StartingPosition.UNKNOWN;
+    }
+    protected StartingPosition STARTING_POSITION = StartingPosition.UNKNOWN;
+
     protected enum PropPosition {
         UNKNOWN,
         LEFT,
         CENTER,
         RIGHT
     }
-    private static double TILE_WIDTH = 24 * 24/21.5; // inches
+    public static double TILE_WIDTH = 24 * 24/21.5; // inches
     private static double PIXEL_DROPPED = 0.2;
     private static double PIXEL_HOLDING = 0.5;
+    public static double TURN_90 = -4.94;
     //private static double PIXEL_POST_DROP = 0.3;
     private Servo purplePixelServo;
     private NormalizedColorSensor colorSensor;
@@ -78,7 +87,6 @@ public class AutonomousMode extends DriveMode {
         super.init();
         /* Camera Setup Start */
         initTfod();
-        // X-value of line that separates left from center signal in camera image
 //      Initialize the Apriltag Detection process
 //        initAprilTag();
 //        setManualExposure(6, 250); // Use low exposure time to reduce motion blur
@@ -97,12 +105,23 @@ public class AutonomousMode extends DriveMode {
         super.start();
         startTime = System.currentTimeMillis();
     }
+    private boolean once = false;
     @Override
     public void loop(){
+
+        if (once) return;
+        once = true;
+
+        if (getStartingPosition() == StartingPosition.FRONTSTAGE) return;
+
+        TrajectorySequenceBuilder toBoard = drive.trajectorySequenceBuilder(new Pose2d())
+                .forward(1 * TILE_WIDTH);
+//        drive.followTrajectorySequence(toBoard.build());
+
         while (teamPropPosition == PropPosition.UNKNOWN){
             // If we run out of time, assume the team prop is on the right.
             long timeSinceStart = System.currentTimeMillis() - startTime;
-            if (timeSinceStart < maxSignalDelay){
+            if (timeSinceStart > maxSignalDelay){
                 teamPropPosition = PropPosition.RIGHT;
                 break;
             }
@@ -120,25 +139,97 @@ public class AutonomousMode extends DriveMode {
                 break;
             }
         }
+        telemetry.addData("Signal:",teamPropPosition);
         TrajectorySequenceBuilder toSignalTileTrajectoryBuilder = drive.trajectorySequenceBuilder(new Pose2d())
-                .forward(1 * TILE_WIDTH);
+                .forward(1.7 * TILE_WIDTH); //go to middle of tile
         Trajectory postSignalTrajectory;
+        switch (getAlliance()) {
+            case RED:
+                telemetry.addLine("RED");
+                toBoard.turn(TURN_90);
+                break;
+            case BLUE:
+                telemetry.addLine("BLUE");
+                toBoard.turn(-TURN_90);
+                break;
+            default:
+                telemetry.addLine("default");
+                break;
+        }
+
+        switch (teamPropPosition) {
+            case LEFT:
+//                toBoard.strafeLeft(0);
+                break;
+            case CENTER:
+//                toBoard.strafeLeft(0);
+                break;
+            case RIGHT:
+//                toBoard.strafeRight(0);
+                break;
+        }
+
+        double startExtendTime = runtime.milliseconds();
+        drive.followTrajectorySequence(toBoard.build());
+        toBoard = drive.trajectorySequenceBuilder(new Pose2d());
+        // Begin raising armAngleMotor
+        armAngleMotor.setTargetPosition(5000);
+        if ((runtime.milliseconds() - startExtendTime) > 1000) {
+            wristServo.setPosition(0.76); // USE EXTENSION OF ARM MOTOR TO DETERMINE EXTENSION
+        } // Separate if statement for separate tuning
+        if ((runtime.milliseconds() - startExtendTime) > 1000) {
+            armExtensionMotor.setTargetPosition(-1000); //was -2100
+        }
+        double startTime = runtime.milliseconds();
+        while (runtime.milliseconds() - startTime < 650);
+
+        toBoard.forward(2.1 * TILE_WIDTH);
         switch(teamPropPosition){
             case LEFT:
                  toSignalTileTrajectoryBuilder
                          .turn(Math.PI / 2);
+                 // Move left slightly
                 break;
             case RIGHT:
             default:
-                toSignalTileTrajectoryBuilder
-                        .turn(-Math.PI / 2);
+//                toSignalTileTrajectoryBuilder
+//                        .strafeRight(100);
+                // Might move right
                 break;
             case CENTER:
+                // Move left slightly
                 break;
         }
-        drive.followTrajectorySequence(toSignalTileTrajectoryBuilder.build());
+        // drive.followTrajectorySequence(toSignalTileTrajectoryBuilder.build());
 
-        dropPurplePixel(teamPropPosition);
+        // dropPurplePixel(teamPropPosition);
+
+        if (getStartingPosition() == StartingPosition.BACKSTAGE) {
+            drive.followTrajectorySequence(toBoard.build());
+        }
+
+        bucketServo.setPosition(dropBucketPixelPosition);
+
+        drive.followTrajectorySequence(toBoard.build());
+        toBoard = drive.trajectorySequenceBuilder(new Pose2d());
+        startTime = runtime.milliseconds();
+        while (runtime.milliseconds() - startTime < 1500);
+
+        toBoard.back(1 * TILE_WIDTH);
+        drive.followTrajectorySequence(toBoard.build());
+        toBoard = drive.trajectorySequenceBuilder(new Pose2d());
+        startTime = runtime.milliseconds();
+        while (runtime.milliseconds() - startTime < 650);
+        armAngleMotor.setTargetPosition(0); //retract pixel arm
+        armExtensionMotor.setTargetPosition(0);
+        wristServo.setPosition(1.0);
+
+        startTime = runtime.milliseconds(); //wait for retraction
+        while (runtime.milliseconds() - startTime < 750);
+        toBoard.forward(1 * TILE_WIDTH);
+
+        drive.followTrajectorySequence(toBoard.build());
+        toBoard = drive.trajectorySequenceBuilder(new Pose2d());
 
 //        drive.followTrajectorySequence(
 //                drive.trajectorySequenceBuilder(drive.getPoseEstimate())
@@ -177,7 +268,6 @@ public class AutonomousMode extends DriveMode {
     }
 
     private void initTfod() {
-        // Create the TensorFlow processor the easy way.
         // Create the TensorFlow processor by using a builder.
         tfod = new TfodProcessor.Builder()
                 .setModelFileName("team_props_1.tflite")
@@ -189,7 +279,7 @@ public class AutonomousMode extends DriveMode {
                 .build();
         tfodVisionPortal = VisionPortal.easyCreateWithDefaults(
                 hardwareMap.get(WebcamName.class, "Webcam 1"), tfod);
-    }   // end method initTfod()
+    }   // End method initTfod()
 
     /**
      * Initialize the AprilTag processor.
@@ -267,6 +357,6 @@ public class AutonomousMode extends DriveMode {
         //purplePixelServo.setPosition(PIXEL_DROPPED);
         //purplePixelServo.setPosition(PIXEL_POST_DROP);
 
-        //move backwards to get out of way
+        // Move backwards to get out of way
     }
 }
