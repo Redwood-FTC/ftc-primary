@@ -5,6 +5,8 @@ import static java.lang.Thread.sleep;
 import android.graphics.Color;
 import android.util.Log;
 
+import androidx.annotation.VisibleForTesting;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -138,17 +140,63 @@ public class AutonomousMode extends DriveMode {
             }
         }
 
+        switch (teamPropPosition) {
+            case LEFT:
+                toBoard.turn(-TURN_90);
+                break;
+            case RIGHT:
+                toBoard.turn(TURN_90);
+                break;
+            case CENTER:
+            case UNKNOWN:
+            default:
+                break;
+        }
+
+        drive.setMotorPowers(0.1,0.1,0.1,0.1);
+
+                // Creep forward until on the tape to drop the pixel.
+        boolean onTape = false;
+        Pose2d inTilePose = drive.getPoseEstimate();
+        while (!onTape){
+            /* Color sensor check START */
+            NormalizedRGBA colors = colorSensor.getNormalizedColors();
+            Color.colorToHSV(colors.toColor(), hsvValues);
+            /* Logic to what color tape it is over. */
+            float saturation = hsvValues[1];
+            onTape = (saturation >= 0.6) || (colors.red > 0.04);
+        }
+
+        purplePixelServo.setPosition(PIXEL_DROPPED);
+
+        drive.setMotorPowers(0, 0, 0, 0);
+
+        //move back
+        //reuse the code between switches
+        switch (teamPropPosition) {
+            case LEFT:
+                break;
+            case CENTER:
+                break;
+            case RIGHT:
+                break;
+            case UNKNOWN:
+            default:
+                break;
+        }
+
+
         // dropPurplePixel(teamPropPosition);
 
         // Finished with TFOD, switching to AprilTag detector
-        initAprilTag();
-        setManualExposure(6, 250); // Use low exposure time to reduce motion blur
+//        initAprilTag(); //disabled until waiting for camera fixed
+        // setManualExposure(6, 250); // Use low exposure time to reduce motion blur
 
         telemetry.addData("Signal:",teamPropPosition);
         TrajectorySequenceBuilder toSignalTileTrajectoryBuilder = drive.trajectorySequenceBuilder(new Pose2d())
                 .forward(1.7 * TILE_WIDTH); //go to middle of tile
         Trajectory postSignalTrajectory;
-        switch (getAlliance()) {
+        switch (getAlliance()) { //use teampropposition to figure out how to turn
             case RED:
                 telemetry.addLine("RED");
                 toBoard.turn(TURN_90);
@@ -255,8 +303,6 @@ public class AutonomousMode extends DriveMode {
 //                        .build()
 //        );
 
-        /* Color sensor check END */
-
 //        int desired_tag_id = -1;
 //        switch(signal){
 //            case "left":
@@ -305,10 +351,8 @@ public class AutonomousMode extends DriveMode {
         // Create the AprilTag processor by using a builder.
         aprilTag = new AprilTagProcessor.Builder().build();
         // Create the vision portal by using a builder.
-        aprilTagVisionPortal = new VisionPortal.Builder()
-                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
-                .addProcessor(aprilTag)
-                .build();
+        aprilTagVisionPortal = VisionPortal.easyCreateWithDefaults(
+                hardwareMap.get(WebcamName.class, "Webcam 1"), aprilTag);
     }
 
     /**
@@ -332,13 +376,13 @@ public class AutonomousMode extends DriveMode {
             telemetry.update();
         }
 
-            ExposureControl exposureControl = aprilTagVisionPortal.getCameraControl(ExposureControl.class);
-            if (exposureControl.getMode() != ExposureControl.Mode.Manual) {
-                exposureControl.setMode(ExposureControl.Mode.Manual);
-            }
-            exposureControl.setExposure((long)exposureMS, TimeUnit.MILLISECONDS);
-            GainControl gainControl = aprilTagVisionPortal.getCameraControl(GainControl.class);
-            gainControl.setGain(gain);
+        ExposureControl exposureControl = aprilTagVisionPortal.getCameraControl(ExposureControl.class);
+        if (exposureControl.getMode() != ExposureControl.Mode.Manual) {
+            exposureControl.setMode(ExposureControl.Mode.Manual);
+        }
+        exposureControl.setExposure((long)exposureMS, TimeUnit.MILLISECONDS);
+        GainControl gainControl = aprilTagVisionPortal.getCameraControl(GainControl.class);
+        gainControl.setGain(gain);
     }
 
     protected void dropPurplePixel(PropPosition position) {
@@ -346,31 +390,7 @@ public class AutonomousMode extends DriveMode {
 
 //        boolean turnLeftToBackdrop = false;
 
-//        // Creep forward until on the tape to drop the pixel.
-//        boolean onTape = false;
-//        Pose2d inTilePose = drive.getPoseEstimate();
-//        while (!onTape){
-//            /* Color sensor check START */
-//            NormalizedRGBA colors = colorSensor.getNormalizedColors();
-//            Color.colorToHSV(colors.toColor(), hsvValues);
-//            /* Logic to what color tape it is over. */
-//            float saturation = hsvValues[1];
-//            onTape = (saturation >= 0.6) || (colors.red > 0.04);
-//            TrajectoryBuilder partialTrajectory =
-//                    drive.trajectoryBuilder(drive.getPoseEstimate())
-//                            .forward(1);
-//            if (turnLeftToBackdrop){
-//                partialTrajectory.strafeLeft(1);
-//            } else{
-//                partialTrajectory.strafeRight(1);
-//            }
-//            drive.followTrajectory(
-//                            partialTrajectory.build()
-//            );
-//            telemetry.addData("Saturation: ", saturation);
-//            telemetry.update();
-//        }
-//
+
         //purplePixelServo.setPosition(PIXEL_DROPPED);
         //purplePixelServo.setPosition(PIXEL_POST_DROP);
 
