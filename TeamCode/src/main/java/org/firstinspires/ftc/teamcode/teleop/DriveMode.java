@@ -369,9 +369,8 @@ public class DriveMode extends OpMode {
                     wristServo.setPosition(0.76); // USE EXTENSION OF ARM MOTOR TO DETERMINE EXENSION
                 } // Separate if to allow separate tuning
                 if ((System.currentTimeMillis() - timePixelModeChanged) > 1000) {
-                    armExtensionMotor.setTargetPosition(-2000); //was -2100
+                    armExtensionMotor.setTargetPosition(-1700); //was -2100
                 }
-
                 //put out armExtensionMotor after 200-ish mils
                 //move wristServo same time
             } else if (!pixelDropMode) {
