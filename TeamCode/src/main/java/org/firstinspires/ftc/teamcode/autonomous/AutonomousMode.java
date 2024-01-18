@@ -64,8 +64,8 @@ public class AutonomousMode extends DriveMode {
         RIGHT
     }
     public static double TILE_WIDTH = 24 * 24/21.5; // inches
-    private static double PIXEL_DROPPED = 0.2;
-    private static double PIXEL_HOLDING = 0.5;
+    private static double PIXEL_DROPPED = 1.0;
+    private static double PIXEL_HOLDING = 0.2;
     public static double TURN_90 = -4.94;
     //private static double PIXEL_POST_DROP = 0.3;
     private Servo purplePixelServo;
