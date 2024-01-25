@@ -85,6 +85,13 @@ public class AutonomousMode extends DriveMode {
     private final float[] hsvValues = new float[3];
     private long startTime;
 
+    public static double toTapeAmount = 9999999;
+    public static double rightToMiddleAmount = 9999999;
+    public static double leftToMiddleAmount = 9999999;
+    public static double centreToMiddleAmount = 9999999;
+    public static double toBoardAmount = 99999999;
+    public static double fromBoardAmount = 9999999;
+    public static double fromFromBoardAmount = 9999999;
     public static double MOTOR_SLOW_SPEED = 0.2;
 
     @Override
@@ -346,7 +353,7 @@ public class AutonomousMode extends DriveMode {
         CENTRE_TO_MIDDLE, // ditto
         TO_BOARD, // go to the board, from the middle
         FROM_BOARD, // backup from the board
-        FROM_TO_BOARD, // go back after backing up
+        FROM_FROM_BOARD, // go back after backing up (we are going from from_board)
     }
 
     private void turn90() {
@@ -354,13 +361,34 @@ public class AutonomousMode extends DriveMode {
     }
 
     private void drive(Drive driveAmount) {
+        double sleep_amount = 0;
+
         switch (driveAmount) {
             case TO_TAPE:
-                motorsForward();
-                sleepMillis(theUltimateAnswerToLifeTheUniverseAndEverything);
-                motorsOff();
+                sleep_amount = toTapeAmount;
                 break;
+            case RIGHT_TO_MIDDLE:
+                sleep_amount = rightToMiddleAmount;
+                break;
+            case LEFT_TO_MIDDLE:
+                sleep_amount = leftToMiddleAmount;
+                break;
+            case CENTRE_TO_MIDDLE:
+                sleep_amount = centreToMiddleAmount;
+                break;
+            case TO_BOARD:
+                sleep_amount = toBoardAmount;
+                break;
+            case FROM_BOARD:
+            case FROM_FROM_BOARD:
+//                motorsForward();
+//                sleepMillis(theUltimateAnswerToLifeTheUniverseAndEverything);
+//                motorsOff();
+//                break;
         }
+
+
+
     }
 
     private void turn(Turn turnAmount) {
