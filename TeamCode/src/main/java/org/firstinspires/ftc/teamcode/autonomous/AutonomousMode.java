@@ -84,6 +84,9 @@ public class AutonomousMode extends DriveMode {
     private RobotOneMecanumDrive drive;
     private final float[] hsvValues = new float[3];
     private long startTime;
+
+    public static double MOTOR_SLOW_SPEED = 0.2;
+
     @Override
     public void init() {
         drive = new RobotOneMecanumDrive(hardwareMap);
@@ -328,6 +331,84 @@ public class AutonomousMode extends DriveMode {
 //                }
 //            }
 //        }
+    }
+
+    enum Turn {
+        RIGHT_90,
+        LEFT_90,
+        GO_180,
+    }
+
+    enum Drive {
+        TO_TAPE,
+        RIGHT_TO_MIDDLE, // to the middle, when we are right
+        LEFT_TO_MIDDLE, // ditto
+        CENTRE_TO_MIDDLE, // ditto
+        TO_BOARD, // go to the board, from the middle
+        FROM_BOARD, // backup from the board
+        FROM_TO_BOARD, // go back after backing up
+    }
+
+    private void turn90() {
+        // do stuff
+    }
+
+    private void drive(Drive driveAmount) {
+        switch (driveAmount) {
+            case TO_TAPE:
+                motorsForward();
+                sleepMillis(theUltimateAnswerToLifeTheUniverseAndEverything);
+                motorsOff();
+                break;
+        }
+    }
+
+    private void turn(Turn turnAmount) {
+        switch (turnAmount) {
+            case LEFT_90:
+                motorsLeft();
+                sleepMillis(TheUltimateQuestionToLifeTheUniverseAndEverything);
+                motorsOff();
+                break;
+            case RIGHT_90:
+                motorsRight();
+                sleepMillis(asdasdiadijadjsadjks);
+                motorsOff();
+                break;
+        }
+    }
+
+    private void motorsLeft() {
+        drive.setMotorPowers(-1, 1, -1, 1);
+    }
+
+    private void motorsRight() {
+        drive.setMotorPowers(1, -1, 1, -1);
+    }
+
+    private void motorsForward() {
+        drive.setMotorPowers(1,1,1,1);
+    }
+
+    void motorsForwardSlow() {
+        drive.setMotorPowers(MOTOR_SLOW_SPEED, MOTOR_SLOW_SPEED, MOTOR_SLOW_SPEED, MOTOR_SLOW_SPEED);
+    }
+
+    private void motorsReverse() {
+        drive.setMotorPowers(-1, -1, -1, -1);
+    }
+
+    private void motorsReverseSlow() {
+        drive.setMotorPowers(-MOTOR_SLOW_SPEED, -MOTOR_SLOW_SPEED, -MOTOR_SLOW_SPEED, -MOTOR_SLOW_SPEED);
+    }
+
+    private void motorsOff() {
+        drive.setMotorPowers(0, 0, 0, 0);
+    }
+
+    private void sleepMillis(double time) {
+        double start = System.currentTimeMillis();
+        while (System.currentTimeMillis() < (start + time));
     }
 
     private void initTfod() {
