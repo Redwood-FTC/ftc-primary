@@ -210,17 +210,17 @@ public class AutonomousMode extends DriveMode {
                 break;
         }
         boolean targetFound = false;
-        while (!targetFound) {
-            // Step through the list of detected tags and look for a matching tag
-            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-            for (AprilTagDetection detection : currentDetections) {
-                if (detection.metadata != null) {
-                    targetFound = true;
-                    desiredTag = detection;
-                    break;  // don't look any further.
-                }
-            }
-        }
+//        while (!targetFound) {
+//            // Step through the list of detected tags and look for a matching tag
+//            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+//            for (AprilTagDetection detection : currentDetections) {
+//                if (detection.metadata != null) {
+//                    targetFound = true;
+//                    desiredTag = detection;
+//                    break;  // don't look any further.
+//                }
+//            }
+//        }
         Log.d("TARGET","TARGET FOUND");
 
         switch (teamPropPosition) {
