@@ -104,12 +104,19 @@ public class DriveMode extends OpMode {
     public static double hookWristDroneAngle = 0.63; // temp value
     public static double unwindWinchPower = -1.0;
     public static double windWinchPower = 1.0;
-    public static double raisedIntakePosition = 0.2;
-    public static double loweredIntakePosition = 0.0;
+    public static double raisedIntakePosition = 0.35;
+    public static int raisedArmPosition = 7200;
+    public static long wristArmChangeDelay = 1000;
+    public static long armExtensionDelay = 1000;
+    public static double wristArmExtendedPosition = 0.76;
+    public static double wristArmRetractedPosition = 1.0;
+    public static int armAngleExtendedPosition = -1700;
+    public static double loweredIntakePosition = 0.2;
     public static double releasedHookPosition = 0.4;
     public static double heldHookPosition = 0.46;
     public static double dropBucketPixelPosition = 0.0;
     public static double loadBucketPixelPosition = 1.0;
+    public static double initialIntakeAnglePosition = 1;
     public static double droneHeldPosition = 0.743;
 
     /* Settable positions/powers used in performActions() */
@@ -154,7 +161,7 @@ public class DriveMode extends OpMode {
         armAngleMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         armExtensionMotor = hardwareMap.get(DcMotor.class, "arm_extension_motor");
-        armExtensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        armExtensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         armExtensionMotor.setPower(0.4); // Controlled automatically, fine tuning not needed
         armExtensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armExtensionMotor.setTargetPosition(0);
@@ -189,7 +196,7 @@ public class DriveMode extends OpMode {
         bucketServoPosition = stoppedContinuousServoPosition;
 
         intakeAngleServo = hardwareMap.get(Servo.class, "intake_angle_servo");
-        intakeAngleServoPosition = 1;
+        intakeAngleServoPosition = initialIntakeAnglePosition;
 
         // Servo Initialization END
 
@@ -278,10 +285,10 @@ public class DriveMode extends OpMode {
 
         if (input.releaseHook  && (hookAngleServoPosition == hookArmHangingAngle)) {
             hookReleaseServoPosition = releasedHookPosition;
-            //input.goToLoweredAngle = true;
             hookAngleServoPosition = hookArmPostReleaseAngle;
         } else {
-            hookReleaseServoPosition = heldHookPosition;
+//            hookReleaseServoPosition = heldHookPosition; //should not be neccessary,
+            //and will keep it open
         }
 
         // POV Mode uses left joystick to go forward (up/down) & strafe (left/right), and right
@@ -320,7 +327,10 @@ public class DriveMode extends OpMode {
 //            //intakeAngleServoPosition = raisedIntakePosition;
             //disabled in favor of raising when toggling
         } else if (runtime.now(TimeUnit.MILLISECONDS) > 700) {
-            intakeAngleServoPosition = loweredIntakePosition;
+            if (runtime.now(TimeUnit.MILLISECONDS) < 2000) {
+                intakeAngleServoPosition = raisedIntakePosition;
+            }
+//            intakeAngleServoPosition = loweredIntakePosition;
 
             // Test code for intake_angle_servo
             // Remember to find correct values later
@@ -330,9 +340,10 @@ public class DriveMode extends OpMode {
                 intakeOn = (intakeOn == true ? false : true);
             }
 
-            if (input.toggleIntakeAngle && runtime.milliseconds() - timeIntakeAngleSet > 150) {
+            if (input.toggleIntakeAngle && (runtime.milliseconds() - timeIntakeAngleSet > 250)) {
                 timeIntakeAngleSet = runtime.milliseconds();
-                intakeAngleServoPosition = raisedIntakePosition;
+                intakeAngleServoPosition =((intakeAngleServoPosition == raisedIntakePosition)
+                        ? loweredIntakePosition : raisedIntakePosition);
             }
 
             if (intakeOn) {
@@ -364,19 +375,19 @@ public class DriveMode extends OpMode {
 
             if (pixelDropMode) { // SET POWER FOR ALL 3
                 // Begin raising armAngleMotor
-                armAngleMotor.setTargetPosition(7200);
-                if ((System.currentTimeMillis() - timePixelModeChanged) > 1000) {
-                    wristServo.setPosition(0.76); // USE EXTENSION OF ARM MOTOR TO DETERMINE EXENSION
+                armAngleMotor.setTargetPosition(raisedArmPosition); //7200
+                if ((System.currentTimeMillis() - timePixelModeChanged) > wristArmChangeDelay) {
+                    wristServo.setPosition(wristArmExtendedPosition); // USE EXTENSION OF ARM MOTOR TO DETERMINE EXENSION
                 } // Separate if to allow separate tuning
-                if ((System.currentTimeMillis() - timePixelModeChanged) > 1000) {
-                    armExtensionMotor.setTargetPosition(-1700); //was -2100
+                if ((System.currentTimeMillis() - timePixelModeChanged) > armExtensionDelay) {
+                    armExtensionMotor.setTargetPosition(armAngleExtendedPosition); //was -2100
                 }
                 //put out armExtensionMotor after 200-ish mils
                 //move wristServo same time
             } else if (!pixelDropMode) {
                 armAngleMotor.setTargetPosition(0);
                 armExtensionMotor.setTargetPosition(0);
-                wristServo.setPosition(1.0);
+                wristServo.setPosition(wristArmRetractedPosition);
             }
 
 //            if (input.lowerPixelArm) {
