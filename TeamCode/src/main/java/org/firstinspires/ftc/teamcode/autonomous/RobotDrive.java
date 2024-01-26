@@ -21,17 +21,22 @@ public class RobotDrive {
         FORWARDS_SLOW,
         BACKWARDS_SLOW,
         STOP,
+        LITTLE_BIT_LEFT,
+        LITTLE_BIT_RIGHT,
+        TO_BOARD,
     }
 
     private DcMotorEx leftFront, leftRear, rightRear, rightFront;
-    public static double motorSlowSpeed = 0.3;
+    public static double motorSlowSpeed = 0.4;
 
     // drive constants
     public static double startLeftCenterStartAmount = 400;
     public static double startRightCenterStartAmount = startLeftCenterStartAmount;
     public static double toPixelCenter = 1200;
+    public static double toBoardTime = 150;
+    public static double toBoardAmount = 1000;
 
-    public static double turnLeft90Amount = 985;
+    public static double turnLeft90Amount = 985; // separate because there have been consistency issues
     public static double turnRight90Amount = 985;
 
     public RobotDrive(HardwareMap hardwareMap){
@@ -81,6 +86,24 @@ public class RobotDrive {
                 return;
             case BACKWARDS_SLOW:
                 motorsReverseSlow();
+                return;
+            case STOP:
+                motorsOff();
+                return;
+            case LITTLE_BIT_LEFT:
+                motorsStrafeLeft();
+                sleepMillis(startLeftCenterStartAmount);
+                motorsOff();
+                return;
+            case LITTLE_BIT_RIGHT:
+                motorsStrafeRight();
+                sleepMillis(startLeftCenterStartAmount);
+                motorsOff();
+                return;
+            case TO_BOARD:
+                motorsReverse();
+                sleepMillis(toBoardAmount);
+                motorsOff();
                 return;
         }
 

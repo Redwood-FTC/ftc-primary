@@ -84,7 +84,6 @@ public class AutonomousMode extends DriveMode {
     private final int rightCenterDivider = 99856453;
     private final float maxSignalDelay = 5000; // milliseconds
     private RobotDrive drive;
-    private MecanumDrive mecanumDrive;
     private final float[] hsvValues = new float[3];
     private long startTime;
 
@@ -96,6 +95,8 @@ public class AutonomousMode extends DriveMode {
         initTfod();
 //      Initialize the Apriltag Detection process
 //        Camera Setup End
+
+
 
         float gain = 3;
         colorSensor = hardwareMap.get(NormalizedColorSensor.class, "color_sensor");
@@ -377,6 +378,8 @@ public class AutonomousMode extends DriveMode {
                 break;
         }
 
+        drive.drive(Drive.STARTRIGHT_CENTER_START);
+
         long startTime = System.currentTimeMillis();
         if (teamPropPosition == PropPosition.LEFT) {
             drive.drive(Drive.BACKWARDS_SLOW);
@@ -385,7 +388,6 @@ public class AutonomousMode extends DriveMode {
         }
 
         boolean detectedTape = false;
-        Pose2d inTilePose = mecanumDrive.getPoseEstimate();
         while (!detectedTape) {
             /* Color sensor check START */
             NormalizedRGBA colors = colorSensor.getNormalizedColors();
@@ -394,13 +396,27 @@ public class AutonomousMode extends DriveMode {
             float saturation = hsvValues[1];
             detectedTape = (saturation >= 0.6) || (colors.red > 0.04);
         }
+        drive.drive(Drive.STOP);
         telemetry.addLine("Detected Pixel.");
-        long backwardsTime = System.currentTimeMillis() - startTime;
+        long timeCrawled = System.currentTimeMillis() - startTime;
         purplePixelServo.setPosition(PIXEL_DROPPED);
 
+        if (!goToBoard) return;
 
-
-        // alignment crap
+        if (teamPropPosition != PropPosition.LEFT) {
+            drive.drive(Drive.BACKWARDS_SLOW);
+            drive.sleepMillis(timeCrawled);
+            drive.drive(Drive.STOP);
+            if (teamPropPosition == PropPosition.RIGHT) {
+                drive.drive(Drive.STARTLEFT_CENTER_START);
+            } else if (teamPropPosition == PropPosition.CENTER) {
+                drive.turn(Turn.RIGHT_90);
+            }
+            drive.drive(Drive.TO_BOARD);
+        } else {
+            drive.drive(Drive.BACKWARDS_SLOW);
+            drive.sleepMillis(drive.toBoardTime);
+        }
     }
 
     private void dropYellowPixel() {
