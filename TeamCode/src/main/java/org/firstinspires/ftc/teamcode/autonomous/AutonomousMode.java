@@ -2,23 +2,16 @@ package org.firstinspires.ftc.teamcode.autonomous;
 
 import static java.lang.Thread.sleep;
 
-import android.graphics.Color;
-import android.util.Log;
-
+import org.firstinspires.ftc.teamcode.autonomous.RobotDrive.*;
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
-import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
-import org.firstinspires.ftc.teamcode.drive.RobotOneMecanumDrive;
 import org.firstinspires.ftc.teamcode.teleop.DriveMode;
-import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
@@ -63,7 +56,7 @@ public class AutonomousMode extends DriveMode {
     }
 
     //to denote if we are starting on the left side of the pixel, or the right
-    private enum StartingSide {
+    public static enum StartingSide {
         LEFT,
         RIGHT,
     }
@@ -81,7 +74,7 @@ public class AutonomousMode extends DriveMode {
     private AprilTagProcessor aprilTag;
     private AprilTagDetection desiredTag = null;
 
-    private StartingSide startingSide;
+    public static StartingSide startingSide;
     private final int leftCenterDivider = 250; // Robot 11.5cm from near tile interlocks
     private final int rightCenterDivider = 99856453;
     private final float maxSignalDelay = 5000; // milliseconds
@@ -107,7 +100,7 @@ public class AutonomousMode extends DriveMode {
         startingSide =
                 ((getStartingPosition() == StartingPosition.BACKSTAGE) && (getAlliance() == Alliance.BLUE))
                         || ((getStartingPosition() == StartingPosition.FRONTSTAGE) && (getAlliance() == Alliance.RED))
-                        ? StartingSide.RIGHT : StartingSide.LEFT;
+                        ? StartingSide.LEFT : StartingSide.RIGHT;
     }
 
     private PropPosition teamPropPosition = PropPosition.UNKNOWN;
@@ -122,12 +115,15 @@ public class AutonomousMode extends DriveMode {
 
     @Override
     public void loop() {
+        telemetry.addData("StartingSide: ", startingSide);
+
         if (once) return;
         once = true;
 
-        drive.drive(RobotDrive.Drive.STARTLEFT_CENTER_START);
-
-        if (once) return;
+//        drive.turn(Turn.RIGHT_90);
+//        drive.sleepMillis(1000);
+//        drive.turn(Turn.LEFT_90);
+//        if (once) return;
 
 //        if (getStartingPosition() == StartingPosition.FRONTSTAGE) return; //move lower down, after we get the pixel
         //also add moving to a consistent position, if possible
@@ -139,28 +135,20 @@ public class AutonomousMode extends DriveMode {
 
         // crawl forward until we find the pixel, go partway to board facing away
         // (so we are always in the same place when we end, and that is where we end if we drop left)
-        dropPurplePixel();
+        dropPurplePixel(getStartingPosition() == StartingPosition.BACKSTAGE);
+
+        if (getStartingPosition() == StartingPosition.FRONTSTAGE) {
+            return;
+        }
 
         // turn around, retract arm, go forward and drop yellow pixel
         dropYellowPixel();
 
         // go backwards, retract, go forwards
         retractArm();
-//
-//        switch (teamPropPosition) {
-//            case LEFT:
-////                toBoard.turn(-TURN_90);
-//                break;
-//            case RIGHT:
-////                toBoard.turn(TURN_90);
-//                break;
-//            case CENTER:
-//            case UNKNOWN:
-//            default:
-//                break;
-//        }
-//
-//        drive.setMotorPowers(0.1,0.1,0.1,0.1);
+
+
+
 //
 //                // Creep forward until on the tape to drop the pixel.
 //        boolean onTape = false;
@@ -369,19 +357,42 @@ public class AutonomousMode extends DriveMode {
         } else {
             drive.drive(RobotDrive.Drive.STARTRIGHT_CENTER_START);
         }
+
+        drive.drive(Drive.TO_PIXEL_CENTER);
     }
 
-    private void dropPurplePixel() {
-//        purplePixelServo.setPosition(PIXEL_DROPPED);
-//
-////        boolean turnLeftToBackdrop = false;
-//
-//
-//        //purplePixelServo.setPosition(PIXEL_DROPPED);
-//        //purplePixelServo.setPosition(PIXEL_POST_DROP);
-//
-//        // Move backwards to get out of way
-//    }
+    private void dropPurplePixel(boolean goToBoard) {
+        switch (teamPropPosition) {
+            case LEFT:
+                drive.turn(Turn.LEFT_90);
+                break;
+            case CENTER:
+                break;
+            case RIGHT:
+                drive.turn(Turn.RIGHT_90);
+                break;
+        }
+
+        if (teamPropPosition == PropPosition.LEFT) {
+            drive.drive(Drive.BACKWARDS_SLOW);
+        } else {
+            drive.drive(Drive.FORWARDS_SLOW);
+        }
+
+        boolean detectedTape = false;
+        Pose2d inTilePose = drive.getPoseEstimate();
+        while (!detectedTape) {
+            /* Color sensor check START */
+            NormalizedRGBA colors = colorSensor.getNormalizedColors();
+            Color.colorToHSV(colors.toColor(), hsvValues);
+            /* Logic to what color tape it is over. */
+            float saturation = hsvValues[1];
+            onTape = (saturation >= 0.6) || (colors.red > 0.04);
+
+        }
+        purplePixelServo.setPosition(PIXEL_DROPPED);
+
+        // alignment crap
     }
 
     private void dropYellowPixel() {
@@ -429,14 +440,14 @@ public class AutonomousMode extends DriveMode {
         }
 
         // Make sure camera is streaming before we try to set the exposure controls
-        if (aprilTagVisionPortal.getCameraState() != VisionPortal.CameraState.STREAMING) {
-            telemetry.addData("Camera", "Waiting");
-            telemetry.update();
-            while ((aprilTagVisionPortal.getCameraState() != VisionPortal.CameraState.STREAMING)) {
-            }
-            telemetry.addData("Camera", "Ready");
-            telemetry.update();
-        }
+//        if (aprilTagVisionPortal.getCameraState() != VisionPortal.CameraState.STREAMING) {
+//            telemetry.addData("Camera", "Waiting");
+//            telemetry.update();
+//            while ((aprilTagVisionPortal.getCameraState() != VisionPortal.CameraState.STREAMING)) {
+//            }
+//            telemetry.addData("Camera", "Ready");
+//            telemetry.update();
+//        }
 
         ExposureControl exposureControl = aprilTagVisionPortal.getCameraControl(ExposureControl.class);
         if (exposureControl.getMode() != ExposureControl.Mode.Manual) {

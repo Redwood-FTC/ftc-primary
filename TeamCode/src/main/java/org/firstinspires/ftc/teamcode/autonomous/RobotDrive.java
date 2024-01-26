@@ -1,34 +1,47 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
+import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+@Config
 public class RobotDrive {
 
-    public enum Turn {
+    public static enum Turn {
         RIGHT_90,
         LEFT_90,
         GO_180,
     }
 
-    public enum Drive {
+    public static enum Drive {
         STARTLEFT_CENTER_START,
         STARTRIGHT_CENTER_START,
-        FORWARD_SLOW,
+        TO_PIXEL_CENTER,
+        FORWARDS_SLOW,
         BACKWARDS_SLOW,
         STOP,
     }
 
-    public static double motorSlowSpeed = 0.2;
     private DcMotorEx leftFront, leftRear, rightRear, rightFront;
-    private double startLeftCenterStartAmount = 300;
-    private double startRightCenterStartAmount = 300;
+    public static double motorSlowSpeed = 0.1;
+
+    // drive constants
+    public static double startLeftCenterStartAmount = 400;
+    public static double startRightCenterStartAmount = startLeftCenterStartAmount;
+    public static double toPixelCenter = 950;
+
+    public static double turnLeft90Amount = 985;
+    public static double turnRight90Amount = 985;
 
     public RobotDrive(HardwareMap hardwareMap){
         leftFront = hardwareMap.get(DcMotorEx.class, "left_front");
         leftRear = hardwareMap.get(DcMotorEx.class, "left_back");
         rightRear = hardwareMap.get(DcMotorEx.class, "right_back");
         rightFront = hardwareMap.get(DcMotorEx.class, "right_front");
+
+        leftFront.setDirection(DcMotor.Direction.REVERSE);
+        leftRear.setDirection(DcMotor.Direction.REVERSE);
     }
 
     private void setMotorPowers(double leftFrontPower, double leftRearPower, double rightRearPower, double rightFrontPower) {
@@ -42,20 +55,22 @@ public class RobotDrive {
         setMotorPowers(power, power, power, power);
     }
 
-    public void turn90() {
-        // do stuff
-    }
-
     public void drive(Drive driveAmount) {
         double sleep_amount = 0;
 
         switch (driveAmount) {
             case STARTLEFT_CENTER_START:
-                sleep_amount = startLeftCenterStartAmount;
-                break;
+                motorsStrafeRight();
+                sleepMillis(startLeftCenterStartAmount);
+                motorsOff();
+                return;
             case STARTRIGHT_CENTER_START:
-                sleep_amount = startRightCenterStartAmount;
-                break;
+                motorsStrafeLeft();
+                sleepMillis(startRightCenterStartAmount);
+                motorsOff();
+                return;
+            case TO_PIXEL_CENTER:
+                sleep_amount = toPixelCenter;
         }
 
         motorsForward();
@@ -67,35 +82,40 @@ public class RobotDrive {
         switch (turnAmount) {
             case LEFT_90:
                 motorsTurnLeft();
-//                sleepMillis(TheUltimateQuestionToLifeTheUniverseAndEverything);
+                sleepMillis(turnLeft90Amount);
                 motorsOff();
                 break;
             case RIGHT_90:
                 motorsTurnRight();
-//                sleepMillis(asdasdiadijadjsadjks);
+                sleepMillis(turnRight90Amount);
+                motorsOff();
+                break;
+            case GO_180:
+                motorsTurnRight();
+                sleepMillis(2 * turnLeft90Amount);
                 motorsOff();
                 break;
         }
     }
 
     private void motorsTurnLeft() {
-        setMotorPowers(-1, 1, -1, 1);
+        setMotorPowers(-0.5, -0.5, 0.5, 0.5);
     }
 
     private void motorsTurnRight() {
-        setMotorPowers(1, -1, 1, -1);
+        setMotorPowers(0.5, 0.5, -0.5, -0.5);
     }
 
     private void motorsStrafeLeft() {
-        setMotorPowers(1, -1, 1, -1);
+        setMotorPowers(-0.5, 0.5, -0.5, 0.5);
     }
 
     private void motorsStrafeRight() {
-        setMotorPowers(-1, 1, -1, 1);
+        setMotorPowers(0.5, -0.5, 0.5, -0.5);
     }
 
     private void motorsForward() {
-        setAllMotorPowers(1);
+        setAllMotorPowers(0.5);
     }
 
     void motorsForwardSlow() {
@@ -103,7 +123,7 @@ public class RobotDrive {
     }
 
     private void motorsReverse() {
-        setAllMotorPowers(-1);
+        setAllMotorPowers(-0.5);
     }
 
     private void motorsReverseSlow() {
@@ -114,7 +134,7 @@ public class RobotDrive {
         setAllMotorPowers(0);
     }
 
-    private void sleepMillis(double time) {
+    public void sleepMillis(double time) {
         double start = System.currentTimeMillis();
         while (System.currentTimeMillis() < (start + time));
     }
