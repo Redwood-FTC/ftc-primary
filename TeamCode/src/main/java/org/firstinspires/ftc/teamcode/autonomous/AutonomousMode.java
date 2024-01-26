@@ -2,9 +2,14 @@ package org.firstinspires.ftc.teamcode.autonomous;
 
 import static java.lang.Thread.sleep;
 
+import android.graphics.Color;
+
 import org.firstinspires.ftc.teamcode.autonomous.RobotDrive.*;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.drive.MecanumDrive;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -79,6 +84,7 @@ public class AutonomousMode extends DriveMode {
     private final int rightCenterDivider = 99856453;
     private final float maxSignalDelay = 5000; // milliseconds
     private RobotDrive drive;
+    private MecanumDrive mecanumDrive;
     private final float[] hsvValues = new float[3];
     private long startTime;
 
@@ -120,8 +126,8 @@ public class AutonomousMode extends DriveMode {
         if (once) return;
         once = true;
 
-        drive.drive(Drive.FORWARDS_SLOW);
-        if (once) return;
+//        drive.drive(Drive.FORWARDS_SLOW);
+//        if (once) return;
 
 //        if (getStartingPosition() == StartingPosition.FRONTSTAGE) return; //move lower down, after we get the pixel
         //also add moving to a consistent position, if possible
@@ -378,16 +384,15 @@ public class AutonomousMode extends DriveMode {
         }
 
         boolean detectedTape = false;
-//        Pose2d inTilePose = drive.getPoseEstimate();
-//        while (!detectedTape) {
-//            /* Color sensor check START */
-//            NormalizedRGBA colors = colorSensor.getNormalizedColors();
-//            Color.colorToHSV(colors.toColor(), hsvValues);
-//            /* Logic to what color tape it is over. */
-//            float saturation = hsvValues[1];
-//            onTape = (saturation >= 0.6) || (colors.red > 0.04);
-//
-//        }
+        Pose2d inTilePose = mecanumDrive.getPoseEstimate();
+        while (!detectedTape) {
+            /* Color sensor check START */
+            NormalizedRGBA colors = colorSensor.getNormalizedColors();
+            Color.colorToHSV(colors.toColor(), hsvValues);
+            /* Logic to what color tape it is over. */
+            float saturation = hsvValues[1];
+            detectedTape = (saturation >= 0.6) || (colors.red > 0.04);
+        }
 
         purplePixelServo.setPosition(PIXEL_DROPPED);
 
