@@ -29,16 +29,20 @@ public class RobotDrive {
     // drive constants
     public static double startLeftCenterStartAmount = 400;
     public static double startRightCenterStartAmount = startLeftCenterStartAmount;
-    public static double toPixelCenter = 950;
+    public static double toPixelCenter = 1200;
 
     public static double turnLeft90Amount = 985;
     public static double turnRight90Amount = 985;
 
     public RobotDrive(HardwareMap hardwareMap){
         leftFront = hardwareMap.get(DcMotorEx.class, "left_front");
+        leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftRear = hardwareMap.get(DcMotorEx.class, "left_back");
+        leftRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightRear = hardwareMap.get(DcMotorEx.class, "right_back");
+        rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront = hardwareMap.get(DcMotorEx.class, "right_front");
+        rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         leftFront.setDirection(DcMotor.Direction.REVERSE);
         leftRear.setDirection(DcMotor.Direction.REVERSE);
@@ -71,6 +75,13 @@ public class RobotDrive {
                 return;
             case TO_PIXEL_CENTER:
                 sleep_amount = toPixelCenter;
+                break;
+            case FORWARDS_SLOW:
+                motorsForwardSlow();
+                return;
+            case BACKWARDS_SLOW:
+                motorsReverseSlow();
+                return;
         }
 
         motorsForward();
