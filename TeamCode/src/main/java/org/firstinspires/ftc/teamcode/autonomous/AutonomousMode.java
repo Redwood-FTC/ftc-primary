@@ -120,10 +120,8 @@ public class AutonomousMode extends DriveMode {
         if (once) return;
         once = true;
 
-//        drive.turn(Turn.RIGHT_90);
-//        drive.sleepMillis(1000);
-//        drive.turn(Turn.LEFT_90);
-//        if (once) return;
+        drive.drive(Drive.FORWARDS_SLOW);
+        if (once) return;
 
 //        if (getStartingPosition() == StartingPosition.FRONTSTAGE) return; //move lower down, after we get the pixel
         //also add moving to a consistent position, if possible
@@ -380,16 +378,17 @@ public class AutonomousMode extends DriveMode {
         }
 
         boolean detectedTape = false;
-        Pose2d inTilePose = drive.getPoseEstimate();
-        while (!detectedTape) {
-            /* Color sensor check START */
-            NormalizedRGBA colors = colorSensor.getNormalizedColors();
-            Color.colorToHSV(colors.toColor(), hsvValues);
-            /* Logic to what color tape it is over. */
-            float saturation = hsvValues[1];
-            onTape = (saturation >= 0.6) || (colors.red > 0.04);
+//        Pose2d inTilePose = drive.getPoseEstimate();
+//        while (!detectedTape) {
+//            /* Color sensor check START */
+//            NormalizedRGBA colors = colorSensor.getNormalizedColors();
+//            Color.colorToHSV(colors.toColor(), hsvValues);
+//            /* Logic to what color tape it is over. */
+//            float saturation = hsvValues[1];
+//            onTape = (saturation >= 0.6) || (colors.red > 0.04);
+//
+//        }
 
-        }
         purplePixelServo.setPosition(PIXEL_DROPPED);
 
         // alignment crap
