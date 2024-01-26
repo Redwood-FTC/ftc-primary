@@ -377,6 +377,7 @@ public class AutonomousMode extends DriveMode {
                 break;
         }
 
+        long startTime = System.currentTimeMillis();
         if (teamPropPosition == PropPosition.LEFT) {
             drive.drive(Drive.BACKWARDS_SLOW);
         } else {
@@ -393,8 +394,11 @@ public class AutonomousMode extends DriveMode {
             float saturation = hsvValues[1];
             detectedTape = (saturation >= 0.6) || (colors.red > 0.04);
         }
-
+        telemetry.addLine("Detected Pixel.");
+        long backwardsTime = System.currentTimeMillis() - startTime;
         purplePixelServo.setPosition(PIXEL_DROPPED);
+
+
 
         // alignment crap
     }
