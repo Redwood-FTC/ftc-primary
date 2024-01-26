@@ -5,21 +5,13 @@ import static java.lang.Thread.sleep;
 import android.graphics.Color;
 import android.util.Log;
 
-import androidx.annotation.VisibleForTesting;
-
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
-import com.fasterxml.jackson.databind.annotation.JsonAppend;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
@@ -45,7 +37,8 @@ public class AutonomousMode extends DriveMode {
         RED,
         BLUE
     }
-//    protected Alliance ALLIANCE = Alliance.UNKNOWN;
+
+    //    protected Alliance ALLIANCE = Alliance.UNKNOWN;
     protected Alliance getAlliance() {
         return Alliance.UNKNOWN;
     }
@@ -55,9 +48,11 @@ public class AutonomousMode extends DriveMode {
         FRONTSTAGE,
         BACKSTAGE
     }
+
     protected StartingPosition getStartingPosition() {
         return StartingPosition.UNKNOWN;
     }
+
     protected StartingPosition STARTING_POSITION = StartingPosition.UNKNOWN;
 
     protected enum PropPosition {
@@ -66,7 +61,14 @@ public class AutonomousMode extends DriveMode {
         CENTER,
         RIGHT
     }
-    public static double TILE_WIDTH = 24 * 24/21.5; // inches
+
+    //to denote if we are starting on the left side of the pixel, or the right
+    private enum StartingSide {
+        LEFT,
+        RIGHT,
+    }
+
+    public static double TILE_WIDTH = 24 * 24 / 21.5; // inches
     private static double PIXEL_DROPPED = 1.0;
     private static double PIXEL_HOLDING = 0.2;
     public static double TURN_90 = -4.94;
@@ -79,26 +81,18 @@ public class AutonomousMode extends DriveMode {
     private AprilTagProcessor aprilTag;
     private AprilTagDetection desiredTag = null;
 
+    private StartingSide startingSide;
     private final int leftCenterDivider = 250; // Robot 11.5cm from near tile interlocks
     private final int rightCenterDivider = 99856453;
     private final float maxSignalDelay = 5000; // milliseconds
-    private RobotOneMecanumDrive drive;
+    private RobotDrive drive;
     private final float[] hsvValues = new float[3];
     private long startTime;
 
-    public static double toTapeAmount = 9999999;
-    public static double rightToMiddleAmount = 9999999;
-    public static double leftToMiddleAmount = 9999999;
-    public static double centreToMiddleAmount = 9999999;
-    public static double toBoardAmount = 99999999;
-    public static double fromBoardAmount = 9999999;
-    public static double fromFromBoardAmount = 9999999;
-    public static double MOTOR_SLOW_SPEED = 0.2;
-
     @Override
     public void init() {
-        drive = new RobotOneMecanumDrive(hardwareMap);
         super.init();
+        drive = new RobotDrive(hardwareMap);
         /* Camera Setup Start */
         initTfod();
 //      Initialize the Apriltag Detection process
@@ -110,358 +104,299 @@ public class AutonomousMode extends DriveMode {
         purplePixelServo = hardwareMap.get(Servo.class, "purple_pixel_servo");
         purplePixelServo.setPosition(PIXEL_HOLDING);
 
+        startingSide =
+                ((getStartingPosition() == StartingPosition.BACKSTAGE) && (getAlliance() == Alliance.BLUE))
+                        || ((getStartingPosition() == StartingPosition.FRONTSTAGE) && (getAlliance() == Alliance.RED))
+                        ? StartingSide.RIGHT : StartingSide.LEFT;
     }
+
     private PropPosition teamPropPosition = PropPosition.UNKNOWN;
+
     @Override
-    public void start(){
+    public void start() {
         super.start();
         startTime = System.currentTimeMillis();
     }
-    private boolean once = false;
-    @Override
-    public void loop(){
 
+    private boolean once = false;
+
+    @Override
+    public void loop() {
         if (once) return;
         once = true;
 
-        if (getStartingPosition() == StartingPosition.FRONTSTAGE) return;
+        drive.drive(RobotDrive.Drive.STARTLEFT_CENTER_START);
 
-        TrajectorySequenceBuilder toBoard = drive.trajectorySequenceBuilder(new Pose2d())
-                .forward(1 * TILE_WIDTH);
+        if (once) return;
 
-        while (teamPropPosition == PropPosition.UNKNOWN){
-            // If we run out of time, assume the team prop is on the right.
+//        if (getStartingPosition() == StartingPosition.FRONTSTAGE) return; //move lower down, after we get the pixel
+        //also add moving to a consistent position, if possible
+
+        identifyProp();
+
+        // center, go forward, turn if applicable
+        goToPixelStart();
+
+        // crawl forward until we find the pixel, go partway to board facing away
+        // (so we are always in the same place when we end, and that is where we end if we drop left)
+        dropPurplePixel();
+
+        // turn around, retract arm, go forward and drop yellow pixel
+        dropYellowPixel();
+
+        // go backwards, retract, go forwards
+        retractArm();
+//
+//        switch (teamPropPosition) {
+//            case LEFT:
+////                toBoard.turn(-TURN_90);
+//                break;
+//            case RIGHT:
+////                toBoard.turn(TURN_90);
+//                break;
+//            case CENTER:
+//            case UNKNOWN:
+//            default:
+//                break;
+//        }
+//
+//        drive.setMotorPowers(0.1,0.1,0.1,0.1);
+//
+//                // Creep forward until on the tape to drop the pixel.
+//        boolean onTape = false;
+//        Pose2d inTilePose = drive.getPoseEstimate();
+//        while (!onTape){
+//            /* Color sensor check START */
+//            NormalizedRGBA colors = colorSensor.getNormalizedColors();
+//            Color.colorToHSV(colors.toColor(), hsvValues);
+//            /* Logic to what color tape it is over. */
+//            float saturation = hsvValues[1];
+//            onTape = (saturation >= 0.6) || (colors.red > 0.04);
+//        }
+//
+//        purplePixelServo.setPosition(PIXEL_DROPPED);
+//
+//        drive.setMotorPowers(0, 0, 0, 0);
+//
+//        //move back
+//        //reuse the code between switches
+//        switch (teamPropPosition) {
+//            case LEFT:
+//                break;
+//            case CENTER:
+//                break;
+//            case RIGHT:
+//                break;
+//            case UNKNOWN:
+//            default:
+//                break;
+//        }
+//
+//
+//        // dropPurplePixel(teamPropPosition);
+//
+//        // Finished with TFOD, switching to AprilTag detector
+////        initAprilTag(); //disabled until waiting for camera fixed
+//        // setManualExposure(6, 250); // Use low exposure time to reduce motion blur
+//
+//        telemetry.addData("Signal:",teamPropPosition);
+//        TrajectorySequenceBuilder toSignalTileTrajectoryBuilder = drive.trajectorySequenceBuilder(new Pose2d())
+//                .forward(1.7 * TILE_WIDTH); //go to middle of tile
+//        Trajectory postSignalTrajectory;
+//        switch (getAlliance()) { //use teampropposition to figure out how to turn
+//            case RED:
+//                telemetry.addLine("RED");
+////                toBoard.turn(TURN_90);
+//                break;
+//            case BLUE:
+//                telemetry.addLine("BLUE");
+////                toBoard.turn(-TURN_90);
+//                break;
+//            default:
+//                telemetry.addLine("default");
+//                break;
+//        }
+//        boolean targetFound = false;
+////        while (!targetFound) {
+////            // Step through the list of detected tags and look for a matching tag
+////            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+////            for (AprilTagDetection detection : currentDetections) {
+////                if (detection.metadata != null) {
+////                    targetFound = true;
+////                    desiredTag = detection;
+////                    break;  // don't look any further.
+////                }
+////            }
+////        }
+//        Log.d("TARGET","TARGET FOUND");
+//
+//        switch (teamPropPosition) {
+//            case LEFT:
+////                toBoard.strafeLeft(0);
+//                break;
+//            case CENTER:
+////                toBoard.strafeLeft(0);
+//                break;
+//            case RIGHT:
+////                toBoard.strafeRight(0);
+//                break;
+//        }
+//
+//        double startExtendTime = runtime.milliseconds();
+//        // Begin raising armAngleMotor
+//        armAngleMotor.setTargetPosition(5000);
+//        if ((runtime.milliseconds() - startExtendTime) > 1000) {
+//            wristServo.setPosition(0.76); // USE EXTENSION OF ARM MOTOR TO DETERMINE EXTENSION
+//        } // Separate if statement for separate tuning
+//        if ((runtime.milliseconds() - startExtendTime) > 1000) {
+//            armExtensionMotor.setTargetPosition(-1000); //was -2100
+//        }
+//        double startTime = runtime.milliseconds();
+//        while (runtime.milliseconds() - startTime < 650);
+//
+////        toBoard.forward(2.1 * TILE_WIDTH);
+//        switch(teamPropPosition){
+//            case LEFT:
+//                 toSignalTileTrajectoryBuilder
+//                         .turn(Math.PI / 2);
+//                 // Move left slightly
+//                break;
+//            case RIGHT:
+//            default:
+////                toSignalTileTrajectoryBuilder
+////                        .strafeRight(100);
+//                // Might move right
+//                break;
+//            case CENTER:
+//                // Move left slightly
+//                break;
+//        }
+//        // drive.followTrajectorySequence(toSignalTileTrajectoryBuilder.build());
+//
+//
+////        if (getStartingPosition() == StartingPosition.BACKSTAGE) {
+////            drive.followTrajectorySequence(toBoard.build());
+////        }
+//
+//        bucketServo.setPosition(dropBucketPixelPosition);
+//
+////        drive.followTrajectorySequence(toBoard.build());
+////        toBoard = drive.trajectorySequenceBuilder(new Pose2d());
+////        startTime = runtime.milliseconds();
+////        while (runtime.milliseconds() - startTime < 1500);
+//
+////        toBoard.back(1 * TILE_WIDTH);
+////        drive.followTrajectorySequence(toBoard.build());
+////        toBoard = drive.trajectorySequenceBuilder(new Pose2d());
+////        startTime = runtime.milliseconds();
+////        while (runtime.milliseconds() - startTime < 650);
+////        armAngleMotor.setTargetPosition(0); //retract pixel arm
+////        armExtensionMotor.setTargetPosition(0);
+////        wristServo.setPosition(1.0);
+//
+////        startTime = runtime.milliseconds(); //wait for retraction
+////        while (runtime.milliseconds() - startTime < 750);
+////        toBoard.forward(1 * TILE_WIDTH);
+////
+////        drive.followTrajectorySequence(toBoard.build());
+////        toBoard = drive.trajectorySequenceBuilder(new Pose2d());
+//
+////        drive.followTrajectorySequence(
+////                drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+////                        .waitSeconds(0.5)
+////                        .lineToLinearHeading(inTilePose)
+////                        .build()
+////        );
+//
+////        int desired_tag_id = -1;
+////        switch(signal){
+////            case "left":
+////                desired_tag_id = 4; // RED ALLIANCE TODO update for both alliances
+////                break;
+////            case "center":
+////                desired_tag_id = 5;
+////                break;
+////            case "right":
+////                desired_tag_id = 6;
+////                break;
+////        }
+////        boolean targetFound = false;
+////        while (!targetFound) {
+////            // Step through the list of detected tags and look for a matching tag
+////            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+////            for (AprilTagDetection detection : currentDetections) {
+////                if ((detection.metadata != null)
+////                        && (detection.id == desired_tag_id)){
+////                    targetFound = true;
+////                    desiredTag = detection;
+////                    break; // don't look any further.
+////                }
+////            }
+////        }
+    }
+
+    private void identifyProp() { //assume we are starting left for now
+        while (teamPropPosition == PropPosition.UNKNOWN) {
+
+            // If we run out of time, assume the team prop is on !startingSide
             long timeSinceStart = System.currentTimeMillis() - startTime;
-            if (timeSinceStart > maxSignalDelay){
-                teamPropPosition = PropPosition.RIGHT; //for right: = LEFT;
+            if (timeSinceStart > maxSignalDelay) {
+                teamPropPosition = (startingSide == StartingSide.LEFT) ? PropPosition.RIGHT : PropPosition.LEFT;
                 break;
             }
+
             /* Camera START */
             List<Recognition> currentRecognitions = tfod.getRecognitions();
             // Step through the list of recognitions and display info for each one.
             //start left
+            int centerDivider = (startingSide == StartingSide.LEFT) ? leftCenterDivider : rightCenterDivider;
             for (Recognition recognition : currentRecognitions) {
-                double x = (recognition.getLeft() + recognition.getRight()) / 2 ;
-                double y = (recognition.getTop()  + recognition.getBottom()) / 2 ;
-                if (x < leftCenterDivider){
-                    teamPropPosition = PropPosition.LEFT;
-                } else {
-                    teamPropPosition = PropPosition.CENTER;
-                }
-                break;
-            }
-
-            //start right
-            for (Recognition recognition : currentRecognitions) {
-                double x = (recognition.getLeft() + recognition.getRight()) / 2 ;
-                double y = (recognition.getTop()  + recognition.getBottom()) / 2 ;
-                if (x > rightCenterDivider){
-                    teamPropPosition = PropPosition.RIGHT;
+                double x = (recognition.getLeft() + recognition.getRight()) / 2;
+                double y = (recognition.getTop() + recognition.getBottom()) / 2;
+                if (x < centerDivider) {
+                    teamPropPosition = (startingSide == StartingSide.LEFT) ? PropPosition.LEFT : PropPosition.RIGHT;
                 } else {
                     teamPropPosition = PropPosition.CENTER;
                 }
                 break;
             }
         }
-
-        switch (teamPropPosition) {
-            case LEFT:
-                toBoard.turn(-TURN_90);
-                break;
-            case RIGHT:
-                toBoard.turn(TURN_90);
-                break;
-            case CENTER:
-            case UNKNOWN:
-            default:
-                break;
-        }
-
-        drive.setMotorPowers(0.1,0.1,0.1,0.1);
-
-                // Creep forward until on the tape to drop the pixel.
-        boolean onTape = false;
-        Pose2d inTilePose = drive.getPoseEstimate();
-        while (!onTape){
-            /* Color sensor check START */
-            NormalizedRGBA colors = colorSensor.getNormalizedColors();
-            Color.colorToHSV(colors.toColor(), hsvValues);
-            /* Logic to what color tape it is over. */
-            float saturation = hsvValues[1];
-            onTape = (saturation >= 0.6) || (colors.red > 0.04);
-        }
-
-        purplePixelServo.setPosition(PIXEL_DROPPED);
-
-        drive.setMotorPowers(0, 0, 0, 0);
-
-        //move back
-        //reuse the code between switches
-        switch (teamPropPosition) {
-            case LEFT:
-                break;
-            case CENTER:
-                break;
-            case RIGHT:
-                break;
-            case UNKNOWN:
-            default:
-                break;
-        }
-
-
-        // dropPurplePixel(teamPropPosition);
-
-        // Finished with TFOD, switching to AprilTag detector
-//        initAprilTag(); //disabled until waiting for camera fixed
-        // setManualExposure(6, 250); // Use low exposure time to reduce motion blur
-
-        telemetry.addData("Signal:",teamPropPosition);
-        TrajectorySequenceBuilder toSignalTileTrajectoryBuilder = drive.trajectorySequenceBuilder(new Pose2d())
-                .forward(1.7 * TILE_WIDTH); //go to middle of tile
-        Trajectory postSignalTrajectory;
-        switch (getAlliance()) { //use teampropposition to figure out how to turn
-            case RED:
-                telemetry.addLine("RED");
-                toBoard.turn(TURN_90);
-                break;
-            case BLUE:
-                telemetry.addLine("BLUE");
-                toBoard.turn(-TURN_90);
-                break;
-            default:
-                telemetry.addLine("default");
-                break;
-        }
-        boolean targetFound = false;
-//        while (!targetFound) {
-//            // Step through the list of detected tags and look for a matching tag
-//            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-//            for (AprilTagDetection detection : currentDetections) {
-//                if (detection.metadata != null) {
-//                    targetFound = true;
-//                    desiredTag = detection;
-//                    break;  // don't look any further.
-//                }
-//            }
-//        }
-        Log.d("TARGET","TARGET FOUND");
-
-        switch (teamPropPosition) {
-            case LEFT:
-//                toBoard.strafeLeft(0);
-                break;
-            case CENTER:
-//                toBoard.strafeLeft(0);
-                break;
-            case RIGHT:
-//                toBoard.strafeRight(0);
-                break;
-        }
-
-        double startExtendTime = runtime.milliseconds();
-        drive.followTrajectorySequence(toBoard.build());
-        toBoard = drive.trajectorySequenceBuilder(new Pose2d());
-        // Begin raising armAngleMotor
-        armAngleMotor.setTargetPosition(5000);
-        if ((runtime.milliseconds() - startExtendTime) > 1000) {
-            wristServo.setPosition(0.76); // USE EXTENSION OF ARM MOTOR TO DETERMINE EXTENSION
-        } // Separate if statement for separate tuning
-        if ((runtime.milliseconds() - startExtendTime) > 1000) {
-            armExtensionMotor.setTargetPosition(-1000); //was -2100
-        }
-        double startTime = runtime.milliseconds();
-        while (runtime.milliseconds() - startTime < 650);
-
-        toBoard.forward(2.1 * TILE_WIDTH);
-        switch(teamPropPosition){
-            case LEFT:
-                 toSignalTileTrajectoryBuilder
-                         .turn(Math.PI / 2);
-                 // Move left slightly
-                break;
-            case RIGHT:
-            default:
-//                toSignalTileTrajectoryBuilder
-//                        .strafeRight(100);
-                // Might move right
-                break;
-            case CENTER:
-                // Move left slightly
-                break;
-        }
-        // drive.followTrajectorySequence(toSignalTileTrajectoryBuilder.build());
-
-
-        if (getStartingPosition() == StartingPosition.BACKSTAGE) {
-            drive.followTrajectorySequence(toBoard.build());
-        }
-
-        bucketServo.setPosition(dropBucketPixelPosition);
-
-        drive.followTrajectorySequence(toBoard.build());
-        toBoard = drive.trajectorySequenceBuilder(new Pose2d());
-        startTime = runtime.milliseconds();
-        while (runtime.milliseconds() - startTime < 1500);
-
-        toBoard.back(1 * TILE_WIDTH);
-        drive.followTrajectorySequence(toBoard.build());
-        toBoard = drive.trajectorySequenceBuilder(new Pose2d());
-        startTime = runtime.milliseconds();
-        while (runtime.milliseconds() - startTime < 650);
-        armAngleMotor.setTargetPosition(0); //retract pixel arm
-        armExtensionMotor.setTargetPosition(0);
-        wristServo.setPosition(1.0);
-
-        startTime = runtime.milliseconds(); //wait for retraction
-        while (runtime.milliseconds() - startTime < 750);
-        toBoard.forward(1 * TILE_WIDTH);
-
-        drive.followTrajectorySequence(toBoard.build());
-        toBoard = drive.trajectorySequenceBuilder(new Pose2d());
-
-//        drive.followTrajectorySequence(
-//                drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-//                        .waitSeconds(0.5)
-//                        .lineToLinearHeading(inTilePose)
-//                        .build()
-//        );
-
-//        int desired_tag_id = -1;
-//        switch(signal){
-//            case "left":
-//                desired_tag_id = 4; // RED ALLIANCE TODO update for both alliances
-//                break;
-//            case "center":
-//                desired_tag_id = 5;
-//                break;
-//            case "right":
-//                desired_tag_id = 6;
-//                break;
-//        }
-//        boolean targetFound = false;
-//        while (!targetFound) {
-//            // Step through the list of detected tags and look for a matching tag
-//            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-//            for (AprilTagDetection detection : currentDetections) {
-//                if ((detection.metadata != null)
-//                        && (detection.id == desired_tag_id)){
-//                    targetFound = true;
-//                    desiredTag = detection;
-//                    break; // don't look any further.
-//                }
-//            }
-//        }
     }
 
-    private void identyPixel() {
-
-    }
-
-    enum Turn {
-        RIGHT_90,
-        LEFT_90,
-        GO_180,
-    }
-
-    enum Drive {
-        TO_TAPE,
-        RIGHT_TO_MIDDLE, // to the middle, when we are right
-        LEFT_TO_MIDDLE, // ditto
-        CENTRE_TO_MIDDLE, // ditto
-        TO_BOARD, // go to the board, from the middle
-        FROM_BOARD, // backup from the board
-        FROM_FROM_BOARD, // go back after backing up (we are going from from_board)
-    }
-
-    private void turn90() {
-        // do stuff
-    }
-
-    private void drive(Drive driveAmount) {
-        double sleep_amount = 0;
-
-        switch (driveAmount) {
-            case TO_TAPE:
-                sleep_amount = toTapeAmount;
-                break;
-            case RIGHT_TO_MIDDLE:
-                sleep_amount = rightToMiddleAmount;
-                break;
-            case LEFT_TO_MIDDLE:
-                sleep_amount = leftToMiddleAmount;
-                break;
-            case CENTRE_TO_MIDDLE:
-                sleep_amount = centreToMiddleAmount;
-                break;
-            case TO_BOARD:
-                sleep_amount = toBoardAmount;
-                break;
-            case FROM_BOARD:
-            case FROM_FROM_BOARD:
-//                motorsForward();
-//                sleepMillis(theUltimateAnswerToLifeTheUniverseAndEverything);
-//                motorsOff();
-//                break;
-        }
-
-
-
-    }
-
-    private void turn(Turn turnAmount) {
-        switch (turnAmount) {
-            case LEFT_90:
-                motorsLeft();
-                sleepMillis(TheUltimateQuestionToLifeTheUniverseAndEverything);
-                motorsOff();
-                break;
-            case RIGHT_90:
-                motorsRight();
-                sleepMillis(asdasdiadijadjsadjks);
-                motorsOff();
-                break;
+    private void goToPixelStart() {
+        if (startingSide == StartingSide.LEFT) {
+            drive.drive(RobotDrive.Drive.STARTLEFT_CENTER_START);
+        } else {
+            drive.drive(RobotDrive.Drive.STARTRIGHT_CENTER_START);
         }
     }
 
-    private void motorsLeft() {
-        drive.setMotorPowers(-1, 1, -1, 1);
+    private void dropPurplePixel() {
+//        purplePixelServo.setPosition(PIXEL_DROPPED);
+//
+////        boolean turnLeftToBackdrop = false;
+//
+//
+//        //purplePixelServo.setPosition(PIXEL_DROPPED);
+//        //purplePixelServo.setPosition(PIXEL_POST_DROP);
+//
+//        // Move backwards to get out of way
+//    }
     }
 
-    private void motorsRight() {
-        drive.setMotorPowers(1, -1, 1, -1);
+    private void dropYellowPixel() {
+
     }
 
-    private void motorsForward() {
-        drive.setMotorPowers(1,1,1,1);
-    }
+    private void retractArm() {
 
-    void motorsForwardSlow() {
-        drive.setMotorPowers(MOTOR_SLOW_SPEED, MOTOR_SLOW_SPEED, MOTOR_SLOW_SPEED, MOTOR_SLOW_SPEED);
-    }
-
-    private void motorsReverse() {
-        drive.setMotorPowers(-1, -1, -1, -1);
-    }
-
-    private void motorsReverseSlow() {
-        drive.setMotorPowers(-MOTOR_SLOW_SPEED, -MOTOR_SLOW_SPEED, -MOTOR_SLOW_SPEED, -MOTOR_SLOW_SPEED);
-    }
-
-    private void motorsOff() {
-        drive.setMotorPowers(0, 0, 0, 0);
-    }
-
-    private void sleepMillis(double time) {
-        double start = System.currentTimeMillis();
-        while (System.currentTimeMillis() < (start + time));
     }
 
     private void initTfod() {
         // Create the TensorFlow processor by using a builder.
         tfod = new TfodProcessor.Builder()
                 .setModelFileName("team_props_1.tflite")
-                .setModelLabels(new String[] {"b","r"})
+                .setModelLabels(new String[]{"b", "r"})
                 //.setIsModelTensorFlow2(true)
                 //.setIsModelQuantized(true)
                 //.setModelInputSize(300)
@@ -507,20 +442,8 @@ public class AutonomousMode extends DriveMode {
         if (exposureControl.getMode() != ExposureControl.Mode.Manual) {
             exposureControl.setMode(ExposureControl.Mode.Manual);
         }
-        exposureControl.setExposure((long)exposureMS, TimeUnit.MILLISECONDS);
+        exposureControl.setExposure((long) exposureMS, TimeUnit.MILLISECONDS);
         GainControl gainControl = aprilTagVisionPortal.getCameraControl(GainControl.class);
         gainControl.setGain(gain);
-    }
-
-    protected void dropPurplePixel(PropPosition position) {
-        purplePixelServo.setPosition(PIXEL_DROPPED);
-
-//        boolean turnLeftToBackdrop = false;
-
-
-        //purplePixelServo.setPosition(PIXEL_DROPPED);
-        //purplePixelServo.setPosition(PIXEL_POST_DROP);
-
-        // Move backwards to get out of way
     }
 }
