@@ -24,7 +24,7 @@ public class RobotDrive {
     }
 
     private DcMotorEx leftFront, leftRear, rightRear, rightFront;
-    public static double motorSlowSpeed = 0.1;
+    public static double motorSlowSpeed = 0.3;
 
     // drive constants
     public static double startLeftCenterStartAmount = 400;
