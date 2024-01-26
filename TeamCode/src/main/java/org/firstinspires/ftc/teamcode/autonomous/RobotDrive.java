@@ -36,8 +36,8 @@ public class RobotDrive {
     public static double toBoardTime = 150;
     public static double toBoardAmount = 1000;
 
-    public static double turnLeft90Amount = 985; // separate because there have been consistency issues
-    public static double turnRight90Amount = 985;
+    public static double turnLeft90Amount = 1100; // separate because there have been consistency issues
+    public static double turnRight90Amount = 1100;
 
     public RobotDrive(HardwareMap hardwareMap){
         leftFront = hardwareMap.get(DcMotorEx.class, "left_front");
@@ -75,7 +75,8 @@ public class RobotDrive {
                 return;
             case STARTRIGHT_CENTER_START:
                 motorsStrafeLeft();
-                sleepMillis(startRightCenterStartAmount);
+//                sleepMillis(startRightCenterStartAmount);
+                sleepMillis(10000000);
                 motorsOff();
                 return;
             case TO_PIXEL_CENTER:
