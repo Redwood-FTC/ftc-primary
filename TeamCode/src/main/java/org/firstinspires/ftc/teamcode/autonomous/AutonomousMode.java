@@ -80,6 +80,7 @@ public class AutonomousMode extends DriveMode {
     private AprilTagDetection desiredTag = null;
 
     private final int leftCenterDivider = 250; // Robot 11.5cm from near tile interlocks
+    private final int rightCenterDivider = 99856453;
     private final float maxSignalDelay = 5000; // milliseconds
     private RobotOneMecanumDrive drive;
     private final float[] hsvValues = new float[3];
@@ -132,17 +133,30 @@ public class AutonomousMode extends DriveMode {
             // If we run out of time, assume the team prop is on the right.
             long timeSinceStart = System.currentTimeMillis() - startTime;
             if (timeSinceStart > maxSignalDelay){
-                teamPropPosition = PropPosition.RIGHT;
+                teamPropPosition = PropPosition.RIGHT; //for right: = LEFT;
                 break;
             }
             /* Camera START */
             List<Recognition> currentRecognitions = tfod.getRecognitions();
             // Step through the list of recognitions and display info for each one.
+            //start left
             for (Recognition recognition : currentRecognitions) {
                 double x = (recognition.getLeft() + recognition.getRight()) / 2 ;
                 double y = (recognition.getTop()  + recognition.getBottom()) / 2 ;
                 if (x < leftCenterDivider){
                     teamPropPosition = PropPosition.LEFT;
+                } else {
+                    teamPropPosition = PropPosition.CENTER;
+                }
+                break;
+            }
+
+            //start right
+            for (Recognition recognition : currentRecognitions) {
+                double x = (recognition.getLeft() + recognition.getRight()) / 2 ;
+                double y = (recognition.getTop()  + recognition.getBottom()) / 2 ;
+                if (x > rightCenterDivider){
+                    teamPropPosition = PropPosition.RIGHT;
                 } else {
                     teamPropPosition = PropPosition.CENTER;
                 }
@@ -338,6 +352,10 @@ public class AutonomousMode extends DriveMode {
 //                }
 //            }
 //        }
+    }
+
+    private void identyPixel() {
+
     }
 
     enum Turn {
