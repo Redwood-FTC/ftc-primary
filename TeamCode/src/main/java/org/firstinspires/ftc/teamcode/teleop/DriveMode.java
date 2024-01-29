@@ -104,14 +104,14 @@ public class DriveMode extends OpMode {
     public static double hookWristDroneAngle = 0.63; // temp value
     public static double unwindWinchPower = -1.0;
     public static double windWinchPower = 1.0;
-    public static double raisedIntakePosition = 0.35;
+    public static double raisedIntakePosition = 0.4;
     public static int raisedArmPosition = 7200;
     public static long wristArmChangeDelay = 1000;
     public static long armExtensionDelay = 1000;
     public static double wristArmExtendedPosition = 0.76;
     public static double wristArmRetractedPosition = 1.0;
     public static int armAngleExtendedPosition = -1700;
-    public static double loweredIntakePosition = 0.2;
+    public static double loweredIntakePosition = 0.0;
     public static double releasedHookPosition = 0.4;
     public static double heldHookPosition = 0.46;
     public static double dropBucketPixelPosition = 0.0;
@@ -379,7 +379,7 @@ public class DriveMode extends OpMode {
                 if ((System.currentTimeMillis() - timePixelModeChanged) > wristArmChangeDelay) {
                     wristServo.setPosition(wristArmExtendedPosition); // USE EXTENSION OF ARM MOTOR TO DETERMINE EXENSION
                 } // Separate if to allow separate tuning
-                if ((System.currentTimeMillis() - timePixelModeChanged) > armExtensionDelay) {
+                if ((System.currentTimeMillis() - timePixelModeChanged) > armExtensionDelay) { //lower armextensiondelay
                     armExtensionMotor.setTargetPosition(armAngleExtendedPosition); //was -2100
                 }
                 //put out armExtensionMotor after 200-ish mils
