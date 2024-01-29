@@ -5,6 +5,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 @Config
 public class RobotDrive {
 
@@ -27,41 +30,74 @@ public class RobotDrive {
     }
 
     private DcMotorEx leftFront, leftRear, rightRear, rightFront;
-    public static double motorSlowSpeed = 0.4;
+    public static double motorSlowSpeed = 300;
 
     // drive constants
     public static double startLeftCenterStartAmount = 400;
     public static double startRightCenterStartAmount = startLeftCenterStartAmount;
     public static double toPixelCenter = 1200;
     public static double toBoardTime = 150;
+    public static double universalMotorSpeed = 1200;
     public static double toBoardAmount = 1000;
 
-    public static double turnLeft90Amount = 1100; // separate because there have been consistency issues
-    public static double turnRight90Amount = 1100;
+    public static double turnLeft90Amount = 1050; // separate because there have been consistency issues
+    public static double turnRight90Amount = 1050;
 
     public RobotDrive(HardwareMap hardwareMap){
-        leftFront = hardwareMap.get(DcMotorEx.class, "left_front");
-        leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        leftRear = hardwareMap.get(DcMotorEx.class, "left_back");
-        leftRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightRear = hardwareMap.get(DcMotorEx.class, "right_back");
-        rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightFront = hardwareMap.get(DcMotorEx.class, "right_front");
-        rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//        leftFront = hardwareMap.get(DcMotorEx.class, "left_front");
+//        leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//        leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        leftFront.setVelocity(0);
+//        leftFront.setPower(0.5);
+//        leftFront.setDirection(DcMotor.Direction.REVERSE);
+//
+//        leftRear = hardwareMap.get(DcMotorEx.class, "left_back");
+//        leftRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//        leftRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        leftRear.setVelocity(0);
+//        leftRear.setPower(0.5);
+//        leftRear.setDirection(DcMotor.Direction.REVERSE);
 
-        leftFront.setDirection(DcMotor.Direction.REVERSE);
+//        rightRear = hardwareMap.get(DcMotorEx.class, "right_back");
+//        rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//        rightRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        rightRear.setVelocity(0);
+//        rightRear.setPower(0.5);
+//
+//
+//        rightFront = hardwareMap.get(DcMotorEx.class, "right_front");
+//        rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//        rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        rightFront.setVelocity(0);
+//        rightFront.setPower(0.5);
+       leftFront = hardwareMap.get(DcMotorEx.class, "left_front");
+       leftRear = hardwareMap.get(DcMotorEx.class, "left_back");
+       rightRear = hardwareMap.get(DcMotorEx.class, "right_back");
+       rightFront = hardwareMap.get(DcMotorEx.class, "right_front");
+
+       DcMotorEx[] motors = { leftFront, leftRear, rightRear, rightFront };
+
+       for (DcMotorEx motor : motors){
+            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            motor.setVelocity(0);
+//            motor.setPower(0.5);
+        }
+
         leftRear.setDirection(DcMotor.Direction.REVERSE);
+        leftFront.setDirection(DcMotor.Direction.REVERSE);
+
     }
 
-    private void setMotorPowers(double leftFrontPower, double leftRearPower, double rightRearPower, double rightFrontPower) {
-        leftFront.setPower(leftFrontPower);
-        rightFront.setPower(rightFrontPower);
-        leftRear.setPower(leftRearPower);
-        rightRear.setPower(rightRearPower);
+    private void setMotorVelocities(double leftFrontPower, double leftRearPower, double rightRearPower, double rightFrontPower) {
+        leftFront.setVelocity(leftFrontPower);
+        rightFront.setVelocity(rightFrontPower);
+        leftRear.setVelocity(leftRearPower);
+        rightRear.setVelocity(rightRearPower);
     }
 
-    private void setAllMotorPowers(double power) {
-        setMotorPowers(power, power, power, power);
+    private void setAllMotorVelocities(double velocity) {
+        setMotorVelocities(velocity, velocity, velocity, velocity);
     }
 
     public void drive(Drive driveAmount) {
@@ -69,6 +105,8 @@ public class RobotDrive {
 
         switch (driveAmount) {
             case STARTLEFT_CENTER_START:
+//                motorsForward();
+//                sleepMillis(1234123871);
                 motorsStrafeRight();
                 sleepMillis(startLeftCenterStartAmount);
                 motorsOff();
@@ -76,7 +114,7 @@ public class RobotDrive {
             case STARTRIGHT_CENTER_START:
                 motorsStrafeLeft();
 //                sleepMillis(startRightCenterStartAmount);
-                sleepMillis(10000000);
+                sleepMillis(startRightCenterStartAmount);
                 motorsOff();
                 return;
             case TO_PIXEL_CENTER:
@@ -134,39 +172,39 @@ public class RobotDrive {
     }
 
     private void motorsTurnLeft() {
-        setMotorPowers(-0.5, -0.5, 0.5, 0.5);
+        setMotorVelocities(-universalMotorSpeed, -universalMotorSpeed, universalMotorSpeed, universalMotorSpeed);
     }
 
     private void motorsTurnRight() {
-        setMotorPowers(0.5, 0.5, -0.5, -0.5);
+        setMotorVelocities(universalMotorSpeed, universalMotorSpeed, -universalMotorSpeed, -universalMotorSpeed);
     }
 
     private void motorsStrafeLeft() {
-        setMotorPowers(-0.5, 0.5, -0.5, 0.5);
+        setMotorVelocities(-universalMotorSpeed, universalMotorSpeed, -universalMotorSpeed, universalMotorSpeed);
     }
 
     private void motorsStrafeRight() {
-        setMotorPowers(0.5, -0.5, 0.5, -0.5);
+        setMotorVelocities(universalMotorSpeed, -universalMotorSpeed, universalMotorSpeed, -universalMotorSpeed);
     }
 
     private void motorsForward() {
-        setAllMotorPowers(0.5);
+        setAllMotorVelocities(universalMotorSpeed);
     }
 
     void motorsForwardSlow() {
-        setAllMotorPowers(motorSlowSpeed);
+        setAllMotorVelocities(motorSlowSpeed);
     }
 
     private void motorsReverse() {
-        setAllMotorPowers(-0.5);
+        setAllMotorVelocities(-universalMotorSpeed);
     }
 
     private void motorsReverseSlow() {
-        setAllMotorPowers(-motorSlowSpeed);
+        setAllMotorVelocities(-motorSlowSpeed);
     }
 
     private void motorsOff() {
-        setAllMotorPowers(0);
+        setAllMotorVelocities(0);
     }
 
     public void sleepMillis(double time) {
