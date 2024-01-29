@@ -127,8 +127,11 @@ public class AutonomousMode extends DriveMode {
         if (once) return;
         once = true;
 
+//        drive.drive(Drive.STARTLEFT_CENTER_START);
+//
+        drive.drive(Drive.TO_PIXEL_CENTER);
 //        drive.drive(Drive.FORWARDS_SLOW);
-//        if (once) return;
+        if (once) return;
 
 //        if (getStartingPosition() == StartingPosition.FRONTSTAGE) return; //move lower down, after we get the pixel
         //also add moving to a consistent position, if possible
