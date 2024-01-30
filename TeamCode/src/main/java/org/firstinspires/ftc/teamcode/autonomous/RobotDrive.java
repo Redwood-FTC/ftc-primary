@@ -40,7 +40,7 @@ public class RobotDrive {
     public static double universalMotorSpeed = 1280;
     public static double toBoardAmount = 1000;
 
-    public static double turnRight90Amount = 960;
+    public static double turnRight90Amount = 950;
     public static double turnLeft90Amount = turnRight90Amount; // separate because there have been consistency issues
 
     public RobotDrive(HardwareMap hardwareMap){
