@@ -133,9 +133,6 @@ public class AutonomousMode extends DriveMode {
 //        drive.drive(Drive.FORWARDS_SLOW);
 //        if (once) return;
 
-//        if (getStartingPosition() == StartingPosition.FRONTSTAGE) return; //move lower down, after we get the pixel
-        //also add moving to a consistent position, if possible
-
         identifyProp();
 
         // center, go forward, turn if applicable
@@ -387,9 +384,9 @@ public class AutonomousMode extends DriveMode {
                 break;
         }
 
-        if (once) return;
+//        if (once) return;
 
-        drive.drive(Drive.STARTRIGHT_CENTER_START);
+//        drive.drive(Drive.STARTRIGHT_CENTER_START);
 
         long startTime = System.currentTimeMillis();
         if (teamPropPosition == PropPosition.LEFT) {
@@ -419,7 +416,7 @@ public class AutonomousMode extends DriveMode {
             drive.sleepMillis(timeCrawled);
             drive.drive(Drive.STOP);
             if (teamPropPosition == PropPosition.RIGHT) {
-                drive.drive(Drive.STARTLEFT_CENTER_START);
+//                drive.drive(Drive.STARTLEFT_CENTER_START);
             } else if (teamPropPosition == PropPosition.CENTER) {
                 drive.turn(Turn.RIGHT_90);
             }
