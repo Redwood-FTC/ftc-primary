@@ -33,11 +33,11 @@ public class RobotDrive {
     public static double motorSlowSpeed = 300;
 
     // drive constants
-    public static double startLeftCenterStartAmount = 400;
+    public static double startLeftCenterStartAmount = 230;
     public static double startRightCenterStartAmount = startLeftCenterStartAmount;
-    public static double toPixelCenter = 1200;
+    public static double toPixelCenter = 1050;
     public static double toBoardTime = 150;
-    public static double universalMotorSpeed = 1200;
+    public static double universalMotorSpeed = 1280;
     public static double toBoardAmount = 1000;
 
     public static double turnLeft90Amount = 1050; // separate because there have been consistency issues
@@ -75,18 +75,27 @@ public class RobotDrive {
        rightRear = hardwareMap.get(DcMotorEx.class, "right_back");
        rightFront = hardwareMap.get(DcMotorEx.class, "right_front");
 
-       DcMotorEx[] motors = { leftFront, leftRear, rightRear, rightFront };
+        DcMotorEx[] motors = { leftFront, leftRear, rightRear, rightFront };
 
        for (DcMotorEx motor : motors){
             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             motor.setVelocity(0);
+//            motor.setMotorDisable();
 //            motor.setPower(0.5);
+//            motor.setMotorEnable();
         }
 
         leftRear.setDirection(DcMotor.Direction.REVERSE);
         leftFront.setDirection(DcMotor.Direction.REVERSE);
 
+    }
+
+    public void init() {
+        leftFront.setPower(0.5);
+        leftRear.setPower(0.5);
+        rightFront.setPower(0.5);
+        rightFront.setPower(0.5);
     }
 
     private void setMotorVelocities(double leftFrontPower, double leftRearPower, double rightRearPower, double rightFrontPower) {
