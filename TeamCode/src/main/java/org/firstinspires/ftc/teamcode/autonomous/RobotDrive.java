@@ -44,32 +44,6 @@ public class RobotDrive {
     public static double turnRight90Amount = 1050;
 
     public RobotDrive(HardwareMap hardwareMap){
-//        leftFront = hardwareMap.get(DcMotorEx.class, "left_front");
-//        leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//        leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        leftFront.setVelocity(0);
-//        leftFront.setPower(0.5);
-//        leftFront.setDirection(DcMotor.Direction.REVERSE);
-//
-//        leftRear = hardwareMap.get(DcMotorEx.class, "left_back");
-//        leftRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//        leftRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        leftRear.setVelocity(0);
-//        leftRear.setPower(0.5);
-//        leftRear.setDirection(DcMotor.Direction.REVERSE);
-
-//        rightRear = hardwareMap.get(DcMotorEx.class, "right_back");
-//        rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//        rightRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        rightRear.setVelocity(0);
-//        rightRear.setPower(0.5);
-//
-//
-//        rightFront = hardwareMap.get(DcMotorEx.class, "right_front");
-//        rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//        rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        rightFront.setVelocity(0);
-//        rightFront.setPower(0.5);
        leftFront = hardwareMap.get(DcMotorEx.class, "left_front");
        leftRear = hardwareMap.get(DcMotorEx.class, "left_back");
        rightRear = hardwareMap.get(DcMotorEx.class, "right_back");
