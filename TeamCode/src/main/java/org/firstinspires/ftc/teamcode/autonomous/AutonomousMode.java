@@ -89,14 +89,14 @@ public class AutonomousMode extends DriveMode {
 
     @Override
     public void init() {
+        super.autonomous = true;
         super.init();
+
         drive = new RobotDrive(hardwareMap);
         /* Camera Setup Start */
         initTfod();
 //      Initialize the Apriltag Detection process
 //        Camera Setup End
-
-
 
         float gain = 3;
         colorSensor = hardwareMap.get(NormalizedColorSensor.class, "color_sensor");
@@ -127,11 +127,10 @@ public class AutonomousMode extends DriveMode {
         if (once) return;
         once = true;
 
-//        drive.drive(Drive.STARTLEFT_CENTER_START);
-//
-        drive.drive(Drive.TO_PIXEL_CENTER);
+//        drive.init();
+//        drive.drive(Drive.TO_PIXEL_CENTER);
 //        drive.drive(Drive.FORWARDS_SLOW);
-        if (once) return;
+//        if (once) return;
 
 //        if (getStartingPosition() == StartingPosition.FRONTSTAGE) return; //move lower down, after we get the pixel
         //also add moving to a consistent position, if possible
@@ -140,6 +139,8 @@ public class AutonomousMode extends DriveMode {
 
         // center, go forward, turn if applicable
         goToPixelStart();
+
+        if (once) return;
 
         // crawl forward until we find the pixel, go partway to board facing away
         // (so we are always in the same place when we end, and that is where we end if we drop left)
@@ -360,6 +361,10 @@ public class AutonomousMode extends DriveMode {
     }
 
     private void goToPixelStart() {
+        drive.init(); // the call is here and not loop() since it's integral to the way the robot
+        // moves and could cause problems if moved around; even though it's performing important
+        //initialization and could cause problems if the call to goToPixelStart() was moved around.
+
         if (startingSide == StartingSide.LEFT) {
             drive.drive(RobotDrive.Drive.STARTLEFT_CENTER_START);
         } else {
