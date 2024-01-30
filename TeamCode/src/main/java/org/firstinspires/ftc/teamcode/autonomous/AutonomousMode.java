@@ -129,6 +129,7 @@ public class AutonomousMode extends DriveMode {
 
 //        drive.init();
 //        drive.drive(Drive.TO_PIXEL_CENTER);
+//        drive.turn(Turn.RIGHT_90);
 //        drive.drive(Drive.FORWARDS_SLOW);
 //        if (once) return;
 
@@ -140,8 +141,6 @@ public class AutonomousMode extends DriveMode {
         // center, go forward, turn if applicable
         goToPixelStart();
 
-        if (once) return;
-
         // crawl forward until we find the pixel, go partway to board facing away
         // (so we are always in the same place when we end, and that is where we end if we drop left)
         dropPurplePixel(getStartingPosition() == StartingPosition.BACKSTAGE);
@@ -149,6 +148,8 @@ public class AutonomousMode extends DriveMode {
         if (getStartingPosition() == StartingPosition.FRONTSTAGE) {
             return;
         }
+
+        if (once) return;
 
         // turn around, retract arm, go forward and drop yellow pixel
         dropYellowPixel();
@@ -385,6 +386,8 @@ public class AutonomousMode extends DriveMode {
                 drive.turn(Turn.RIGHT_90);
                 break;
         }
+
+        if (once) return;
 
         drive.drive(Drive.STARTRIGHT_CENTER_START);
 
