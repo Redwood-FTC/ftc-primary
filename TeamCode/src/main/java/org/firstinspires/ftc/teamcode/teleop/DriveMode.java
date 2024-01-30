@@ -135,6 +135,8 @@ public class DriveMode extends OpMode {
     protected double leftBackDrivePower = 0.0;
     protected double rightBackDrivePower = 0.0;
 
+    public boolean autonomous = false;
+
     @Override
     public void init() {
         //double LAUNCH_SERVO_OPEN = 0.5;
@@ -443,7 +445,6 @@ public class DriveMode extends OpMode {
         hookAngleServo.setPosition(hookAngleServoPosition);
         hookWristServo.setPosition(hookWristServoPosition);
         winchMotor.setPower(winchMotorPower);
-        intakeAngleServo.setPosition(intakeAngleServoPosition);
         hookReleaseServo.setPosition(hookReleaseServoPosition);
         bucketServo.setPosition(bucketServoPosition);
         // Drive motors
@@ -451,6 +452,10 @@ public class DriveMode extends OpMode {
         rightFrontDrive.setPower(rightFrontDrivePower);
         leftBackDrive.setPower(leftBackDrivePower);
         rightBackDrive.setPower(rightBackDrivePower);
+
+        if (!autonomous) {
+            intakeAngleServo.setPosition(intakeAngleServoPosition);
+        }
     }
 
     /**
