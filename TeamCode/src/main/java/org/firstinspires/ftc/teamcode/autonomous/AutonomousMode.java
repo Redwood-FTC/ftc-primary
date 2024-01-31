@@ -384,7 +384,7 @@ public class AutonomousMode extends DriveMode {
                 break;
         }
 
-//        if (once) return;
+        if (once) return;
 
 //        drive.drive(Drive.STARTRIGHT_CENTER_START);
 
@@ -415,15 +415,18 @@ public class AutonomousMode extends DriveMode {
             drive.drive(Drive.BACKWARDS_SLOW);
             drive.sleepMillis(timeCrawled);
             drive.drive(Drive.STOP);
+            if (once) return;
             if (teamPropPosition == PropPosition.RIGHT) {
 //                drive.drive(Drive.STARTLEFT_CENTER_START);
+                drive.turn(Turn.GO_180);
             } else if (teamPropPosition == PropPosition.CENTER) {
-                drive.turn(Turn.RIGHT_90);
+                drive.turn(Turn.LEFT_90);
             }
             drive.drive(Drive.TO_BOARD);
         } else {
             drive.drive(Drive.BACKWARDS_SLOW);
             drive.sleepMillis(drive.toBoardTime);
+            drive.drive(Drive.STOP);
         }
     }
 
