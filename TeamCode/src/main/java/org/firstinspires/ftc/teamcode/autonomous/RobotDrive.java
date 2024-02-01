@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.teamcode.teleop.Pixel;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -33,14 +35,14 @@ public class RobotDrive {
     public static double motorSlowSpeed = 300;
 
     // drive constants
-    public static double startLeftCenterStartAmount = 230;
+    public static double startLeftCenterStartAmount = 300;
     public static double startRightCenterStartAmount = startLeftCenterStartAmount;
-    public static double toPixelCenter = 1050;
+    public static double toPixelCenter = 900;
     public static double toBoardTime = 150;
     public static double universalMotorSpeed = 1280;
     public static double toBoardAmount = 1000;
 
-    public static double turnRight90Amount = 950;
+    public static double turnRight90Amount = 925;
     public static double turnLeft90Amount = turnRight90Amount; // separate because there have been consistency issues
 
     public RobotDrive(HardwareMap hardwareMap){
@@ -152,6 +154,16 @@ public class RobotDrive {
                 motorsOff();
                 break;
         }
+    }
+
+    public void goForTime(long time, Pixel.Direction direction) {
+        if (direction == Pixel.Direction.FORWARDS) {
+            motorsForward();
+        } else {
+            motorsReverse();
+        }
+        sleepMillis(time);
+        motorsOff();
     }
 
     private void motorsTurnLeft() {
