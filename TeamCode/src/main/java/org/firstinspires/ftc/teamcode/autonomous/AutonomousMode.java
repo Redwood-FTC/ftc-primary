@@ -17,6 +17,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.Exposur
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.teleop.DriveMode;
+import org.firstinspires.ftc.teamcode.teleop.Pixel;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
@@ -53,7 +54,7 @@ public class AutonomousMode extends DriveMode {
 
     protected StartingPosition STARTING_POSITION = StartingPosition.UNKNOWN;
 
-    protected enum PropPosition {
+    public enum PropPosition {
         UNKNOWN,
         LEFT,
         CENTER,
@@ -67,8 +68,8 @@ public class AutonomousMode extends DriveMode {
     }
 
     public static double TILE_WIDTH = 24 * 24 / 21.5; // inches
-    private static double PIXEL_DROPPED = 1.0;
-    private static double PIXEL_HOLDING = 0.2;
+    public static double PIXEL_DROPPED = 1.0;
+    public static double PIXEL_HOLDING = 0.2;
     public static double TURN_90 = -4.94;
     //private static double PIXEL_POST_DROP = 0.3;
     private Servo purplePixelServo;
@@ -80,11 +81,10 @@ public class AutonomousMode extends DriveMode {
     private AprilTagDetection desiredTag = null;
 
     public static StartingSide startingSide;
-    private final int leftCenterDivider = 250; // Robot 11.5cm from near tile interlocks
+    public static int leftCenterDivider = 250; // Robot 11.5cm from near tile interlocks
     private final int rightCenterDivider = 99856453;
     private final float maxSignalDelay = 5000; // milliseconds
     private RobotDrive drive;
-    private final float[] hsvValues = new float[3];
     private long startTime;
 
     @Override
@@ -111,6 +111,7 @@ public class AutonomousMode extends DriveMode {
     }
 
     private PropPosition teamPropPosition = PropPosition.UNKNOWN;
+    private Pixel pixel;
 
     @Override
     public void start() {
@@ -122,7 +123,7 @@ public class AutonomousMode extends DriveMode {
 
     @Override
     public void loop() {
-        telemetry.addData("StartingSide: ", startingSide);
+//        telemetry.addData("StartingSide: ", startingSide);
 
         if (once) return;
         once = true;
@@ -133,6 +134,7 @@ public class AutonomousMode extends DriveMode {
 //        drive.drive(Drive.FORWARDS_SLOW);
 //        if (once) return;
 
+        center();
         identifyProp();
 
         // center, go forward, turn if applicable
@@ -140,7 +142,9 @@ public class AutonomousMode extends DriveMode {
 
         // crawl forward until we find the pixel, go partway to board facing away
         // (so we are always in the same place when we end, and that is where we end if we drop left)
-        dropPurplePixel(getStartingPosition() == StartingPosition.BACKSTAGE);
+        // above comments are outdated
+        pixel = new Pixel(teamPropPosition, drive, colorSensor, purplePixelServo);
+        pixel.dropPurplePixel(getStartingPosition() == StartingPosition.BACKSTAGE);
 
         if (getStartingPosition() == StartingPosition.FRONTSTAGE) {
             return;
@@ -153,8 +157,6 @@ public class AutonomousMode extends DriveMode {
 
         // go backwards, retract, go forwards
         retractArm();
-
-
 
 //
 //                // Creep forward until on the tape to drop the pixel.
@@ -344,11 +346,10 @@ public class AutonomousMode extends DriveMode {
             List<Recognition> currentRecognitions = tfod.getRecognitions();
             // Step through the list of recognitions and display info for each one.
             //start left
-            int centerDivider = (startingSide == StartingSide.LEFT) ? leftCenterDivider : rightCenterDivider;
             for (Recognition recognition : currentRecognitions) {
                 double x = (recognition.getLeft() + recognition.getRight()) / 2;
                 double y = (recognition.getTop() + recognition.getBottom()) / 2;
-                if (x < centerDivider) {
+                if (x < leftCenterDivider) {
                     teamPropPosition = (startingSide == StartingSide.LEFT) ? PropPosition.LEFT : PropPosition.RIGHT;
                 } else {
                     teamPropPosition = PropPosition.CENTER;
@@ -356,79 +357,26 @@ public class AutonomousMode extends DriveMode {
                 break;
             }
         }
+        telemetry.addData("TeamPropPosition: ", teamPropPosition);
     }
 
     private void goToPixelStart() {
         drive.init(); // the call is here and not loop() since it's integral to the way the robot
         // moves and could cause problems if moved around; even though it's performing important
-        //initialization and could cause problems if the call to goToPixelStart() was moved around.
+        // initialization and could cause problems if the call to goToPixelStart() was moved around.
 
+        drive.drive(Drive.TO_PIXEL_CENTER);
+    }
+
+    private void center() {
         if (startingSide == StartingSide.LEFT) {
             drive.drive(RobotDrive.Drive.STARTLEFT_CENTER_START);
         } else {
             drive.drive(RobotDrive.Drive.STARTRIGHT_CENTER_START);
         }
-
-        drive.drive(Drive.TO_PIXEL_CENTER);
     }
 
-    private void dropPurplePixel(boolean goToBoard) {
-        switch (teamPropPosition) {
-            case LEFT:
-                drive.turn(Turn.LEFT_90);
-                break;
-            case CENTER:
-                break;
-            case RIGHT:
-                drive.turn(Turn.RIGHT_90);
-                break;
-        }
 
-        if (once) return;
-
-//        drive.drive(Drive.STARTRIGHT_CENTER_START);
-
-        long startTime = System.currentTimeMillis();
-        if (teamPropPosition == PropPosition.LEFT) {
-            drive.drive(Drive.BACKWARDS_SLOW);
-        } else {
-            drive.drive(Drive.FORWARDS_SLOW);
-        }
-
-        boolean detectedTape = false;
-        while (!detectedTape) {
-            /* Color sensor check START */
-            NormalizedRGBA colors = colorSensor.getNormalizedColors();
-            Color.colorToHSV(colors.toColor(), hsvValues);
-            /* Logic to what color tape it is over. */
-            float saturation = hsvValues[1];
-            detectedTape = (saturation >= 0.6) || (colors.red > 0.04);
-        }
-        drive.drive(Drive.STOP);
-        telemetry.addLine("Detected Pixel.");
-        long timeCrawled = System.currentTimeMillis() - startTime;
-        purplePixelServo.setPosition(PIXEL_DROPPED);
-
-        if (!goToBoard) return;
-
-        if (teamPropPosition != PropPosition.LEFT) {
-            drive.drive(Drive.BACKWARDS_SLOW);
-            drive.sleepMillis(timeCrawled);
-            drive.drive(Drive.STOP);
-            if (once) return;
-            if (teamPropPosition == PropPosition.RIGHT) {
-//                drive.drive(Drive.STARTLEFT_CENTER_START);
-                drive.turn(Turn.GO_180);
-            } else if (teamPropPosition == PropPosition.CENTER) {
-                drive.turn(Turn.LEFT_90);
-            }
-            drive.drive(Drive.TO_BOARD);
-        } else {
-            drive.drive(Drive.BACKWARDS_SLOW);
-            drive.sleepMillis(drive.toBoardTime);
-            drive.drive(Drive.STOP);
-        }
-    }
 
     private void dropYellowPixel() {
 
