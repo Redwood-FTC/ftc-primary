@@ -109,8 +109,14 @@ public class Pixel {
         long startTime = goToTape(Direction.FORWARDS);
         // release pixel
         purplePixelServo.setPosition(PIXEL_DROPPED);
-        // go back
 
+        drive.drive(Drive.CENTER_TO_MIDDLE);
+        drive.turn(Turn.LEFT_90);
+        // extend pixel arm and release pixel
+        drive.drive(Drive.CENTER_TO_BOARD);
+        drive.drive(Drive.FROM_BOARD_BACK);
+        // retract pixel arm
+        drive.drive(Drive.FROM_BOARD_FORWARDS);
     }
 
     private void rightProtocol() {
@@ -122,14 +128,14 @@ public class Pixel {
         long rightTime = goToTape(Direction.FORWARDS);
         // release pixel
         purplePixelServo.setPosition(PIXEL_DROPPED);
-        // 
+        //
     }
 
     public enum Direction {
         FORWARDS,
         BACKWARDS,
     }
-    public long goToTape(Direction direction) {
+    private long goToTape(Direction direction) {
         long startTime = System.currentTimeMillis();
         if (direction == Direction.FORWARDS) {
             drive.drive(Drive.FORWARDS_SLOW);
