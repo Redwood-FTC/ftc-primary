@@ -138,7 +138,8 @@ public class AutonomousMode extends DriveMode {
         // crawl forward until we find the pixel, go partway to board facing away
         // (so we are always in the same place when we end, and that is where we end if we drop left)
         // above comments are outdated
-        pixel = new Pixel(teamPropPosition, drive, colorSensor, purplePixelServo);
+        pixel = new Pixel(teamPropPosition, drive, colorSensor, purplePixelServo, armAngleMotor,
+                          armExtensionMotor, wristServo);
         pixel.deliverPayload(getStartingPosition() == StartingPosition.BACKSTAGE);
 
         if (getStartingPosition() == StartingPosition.FRONTSTAGE) {
