@@ -32,7 +32,6 @@ public class RobotDrive {
     }
 
     private DcMotorEx leftFront, leftRear, rightRear, rightFront;
-    public static double motorSlowSpeed = 300;
 
     // drive constants
     public static double startLeftCenterStartAmount = 300;
@@ -40,9 +39,10 @@ public class RobotDrive {
     public static double toPixelCenter = 900;
     public static double toBoardTime = 150;
     public static double universalMotorSpeed = 1280;
+    public static double motorSlowSpeed = universalMotorSpeed * 0.5;
     public static double toBoardAmount = 1000;
 
-    public static double turnRight90Amount = 925;
+    public static double turnRight90Amount = 890;
     public static double turnLeft90Amount = turnRight90Amount; // separate because there have been consistency issues
 
     public RobotDrive(HardwareMap hardwareMap){
@@ -156,11 +156,24 @@ public class RobotDrive {
         }
     }
 
-    public void goForTime(long time, Pixel.Direction direction) {
+    public enum Speed {
+        NORMAL,
+        SLOW,
+    }
+
+    public void goForTime(long time, Pixel.Direction direction, Speed speed) {
         if (direction == Pixel.Direction.FORWARDS) {
-            motorsForward();
+            if (speed == Speed.NORMAL) {
+                motorsForward();
+            } else {
+                motorsForwardSlow();
+            }
         } else {
-            motorsReverse();
+            if (speed == Speed.NORMAL) {
+                motorsReverse();
+            } else {
+                motorsReverseSlow();
+            }
         }
         sleepMillis(time);
         motorsOff();

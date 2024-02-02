@@ -2,14 +2,9 @@ package org.firstinspires.ftc.teamcode.autonomous;
 
 import static java.lang.Thread.sleep;
 
-import android.graphics.Color;
-
 import org.firstinspires.ftc.teamcode.autonomous.RobotDrive.*;
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.roadrunner.drive.MecanumDrive;
-import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
-import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -144,7 +139,7 @@ public class AutonomousMode extends DriveMode {
         // (so we are always in the same place when we end, and that is where we end if we drop left)
         // above comments are outdated
         pixel = new Pixel(teamPropPosition, drive, colorSensor, purplePixelServo);
-        pixel.dropPurplePixel(getStartingPosition() == StartingPosition.BACKSTAGE);
+        pixel.deliverPayload(getStartingPosition() == StartingPosition.BACKSTAGE);
 
         if (getStartingPosition() == StartingPosition.FRONTSTAGE) {
             return;

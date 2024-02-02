@@ -1,13 +1,10 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
-
 import android.graphics.Color;
 
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.robot.Robot;
 
 import org.firstinspires.ftc.teamcode.autonomous.AutonomousMode;
 import org.firstinspires.ftc.teamcode.autonomous.RobotDrive;
@@ -29,7 +26,7 @@ public class Pixel {
         this.purplePixelServo = purplePixelServo;
     }
 
-    public void dropPurplePixel(boolean goToBoard) {
+    public void deliverPayload(boolean goToBoard) {
         // we are already forward, so we just do this
 
         if (teamPropPosition == AutonomousMode.PropPosition.LEFT) {
@@ -113,31 +110,26 @@ public class Pixel {
         // release pixel
         purplePixelServo.setPosition(PIXEL_DROPPED);
         // go back
-        drive.goForTime(startTime, Direction.BACKWARDS);
-        // pixelStartToBoard();
+
     }
 
     private void rightProtocol() {
         // go until tape
+        long centerTime = goToTape(Direction.FORWARDS);
         // turn right
+        drive.turn(Turn.RIGHT_90);
         // go until tape?
+        long rightTime = goToTape(Direction.FORWARDS);
         // release pixel
-        // go back for time went to tape?
-        // turn left
-        // go back
-    }
-
-    private void pixelStartToBoard() {
-        // turn left
-        // right some amount
-        // forward until tape
+        purplePixelServo.setPosition(PIXEL_DROPPED);
+        // 
     }
 
     public enum Direction {
         FORWARDS,
         BACKWARDS,
     }
-    private long goToTape(Direction direction) {
+    public long goToTape(Direction direction) {
         long startTime = System.currentTimeMillis();
         if (direction == Direction.FORWARDS) {
             drive.drive(Drive.FORWARDS_SLOW);
