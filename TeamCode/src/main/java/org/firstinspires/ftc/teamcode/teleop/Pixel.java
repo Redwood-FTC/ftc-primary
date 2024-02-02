@@ -95,6 +95,19 @@ public class Pixel {
     }
 
     private void leftProtocol() {
+        // pixel drop only code:
+        // go until tape
+        long centerTime = goToTape(Direction.FORWARDS);
+        // turn right
+        drive.turn(Turn.LEFT_90);
+        // go until tape?
+        long leftTime = goToTape(Direction.FORWARDS);
+        // release pixel
+        purplePixelServo.setPosition(PIXEL_DROPPED);
+        // get away from the pixel
+        drive.drive(Drive.FROM_BOARD_BACK);
+
+        // code for dropping the yellow pixel as well:
         // go until center
         // turn right
         // go back until tape
@@ -110,8 +123,13 @@ public class Pixel {
         // release pixel
         purplePixelServo.setPosition(PIXEL_DROPPED);
 
-        drive.drive(Drive.CENTER_TO_MIDDLE);
+       // pixel drop only code:
+//       drive.drive(Drive.FROM_BOARD_BACK);
+
+       // code for dropping the yellow pixel as well:
         drive.turn(Turn.LEFT_90);
+
+        drive.drive(Drive.CENTER_TO_MIDDLE);
         // extend pixel arm and release pixel
         drive.drive(Drive.CENTER_TO_BOARD);
         drive.drive(Drive.FROM_BOARD_BACK);
@@ -128,7 +146,12 @@ public class Pixel {
         long rightTime = goToTape(Direction.FORWARDS);
         // release pixel
         purplePixelServo.setPosition(PIXEL_DROPPED);
-        //
+
+        // pixel drop only code:
+        // get away from the pixel
+        drive.drive(Drive.FROM_BOARD_BACK);
+
+        // code for dropping the yellow pixel as well:
     }
 
     public enum Direction {
