@@ -29,6 +29,14 @@ public class RobotDrive {
         LITTLE_BIT_LEFT,
         LITTLE_BIT_RIGHT,
         TO_BOARD,
+        FROM_BOARD_FORWARDS,
+        FROM_BOARD_BACK,
+        LEFT_TO_MIDDLE,
+        LEFT_TO_BOARD,
+        CENTER_TO_MIDDLE,
+        CENTER_TO_BOARD,
+        RIGHT_TO_MIDDLE,
+        RIGHT_TO_BOARD,
     }
 
     private DcMotorEx leftFront, leftRear, rightRear, rightFront;
@@ -41,6 +49,14 @@ public class RobotDrive {
     public static double universalMotorSpeed = 1280;
     public static double motorSlowSpeed = universalMotorSpeed * 0.5;
     public static double toBoardAmount = 1000;
+    public static double fromBoardForwards = 0;
+    public static double fromBoardBack = 0;
+    public static double leftToMiddle = 0;
+    public static double left = 0;
+    public static double centerToMiddle = 0;
+    public static double center = 0;
+    public static double rightToMiddle = 0;
+    public static double right = 0;
 
     public static double turnRight90Amount = 890;
     public static double turnLeft90Amount = turnRight90Amount; // separate because there have been consistency issues
