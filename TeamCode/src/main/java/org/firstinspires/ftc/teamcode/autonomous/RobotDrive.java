@@ -49,12 +49,13 @@ public class RobotDrive {
     public static double universalMotorSpeed = 1280;
     public static double motorSlowSpeed = universalMotorSpeed * 0.5;
     public static double toBoardAmount = 1000;
-    public static double fromBoardForwards = 1000;
+
     public static double fromBoardBack = 1000;
+    public static double fromBoardForwards = fromBoardBack;
     public static double leftToMiddle = 0;
     public static double leftToBoard = 0;
     public static double centerToMiddle = 0;
-    public static double centerToBoard = 0;
+    public static double centerToBoard = 1400;
     public static double rightToMiddle = 0;
     public static double rightToBoard = 0;
 
