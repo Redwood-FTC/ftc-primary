@@ -49,14 +49,14 @@ public class RobotDrive {
     public static double universalMotorSpeed = 1280;
     public static double motorSlowSpeed = universalMotorSpeed * 0.5;
     public static double toBoardAmount = 1000;
-    public static double fromBoardForwards = 0;
-    public static double fromBoardBack = 0;
+    public static double fromBoardForwards = 1000;
+    public static double fromBoardBack = 1000;
     public static double leftToMiddle = 0;
-    public static double left = 0;
+    public static double leftToBoard = 0;
     public static double centerToMiddle = 0;
-    public static double center = 0;
+    public static double centerToBoard = 0;
     public static double rightToMiddle = 0;
-    public static double right = 0;
+    public static double rightToBoard = 0;
 
     public static double turnRight90Amount = 890;
     public static double turnLeft90Amount = turnRight90Amount; // separate because there have been consistency issues
@@ -145,6 +145,46 @@ public class RobotDrive {
                 sleepMillis(toBoardAmount);
                 motorsOff();
                 return;
+            case FROM_BOARD_FORWARDS:
+                motorsForward();
+                sleepMillis(fromBoardForwards);
+                motorsOff();
+                break;
+            case FROM_BOARD_BACK:
+                motorsReverse();
+                sleepMillis(fromBoardBack);
+                motorsOff();
+                break;
+            case LEFT_TO_MIDDLE:
+                motorsForward();
+                sleepMillis(leftToMiddle);
+                motorsOff();
+                break;
+            case LEFT_TO_BOARD:
+                motorsForward();
+                sleepMillis(leftToBoard);
+                motorsOff();
+                break;
+            case CENTER_TO_MIDDLE:
+                motorsForward();
+                sleepMillis(centerToMiddle);
+                motorsOff();
+                break;
+            case CENTER_TO_BOARD:
+                motorsForward();
+                sleepMillis(centerToBoard);
+                motorsOff();
+                break;
+            case RIGHT_TO_MIDDLE:
+                motorsForward();
+                sleepMillis(rightToMiddle);
+                motorsOff();
+                break;
+            case RIGHT_TO_BOARD:
+                motorsForward();
+                sleepMillis(rightToBoard);
+                motorsOff();
+                break;
         }
 
         motorsForward();
