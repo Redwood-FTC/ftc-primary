@@ -170,12 +170,12 @@ public class Pixel {
     private void extendArm() {
         double startExtendTime = System.currentTimeMillis();
         // Begin raising armAngleMotor
-        armAngleMotor.setTargetPosition(5000);
+        armAngleMotor.setTargetPosition(DriveMode.raisedArmPosition);
         if ((System.currentTimeMillis() - startExtendTime) > 1000) {
-            wristServo.setPosition(0.76); // USE EXTENSION OF ARM MOTOR TO DETERMINE EXTENSION
+            wristServo.setPosition(DriveMode.wristArmExtendedPosition); // USE EXTENSION OF ARM MOTOR TO DETERMINE EXTENSION
         } // Separate if statement for separate tuning
         if ((System.currentTimeMillis() - startExtendTime) > 1000) {
-            armExtensionMotor.setTargetPosition(-1000); //was -2100
+            armExtensionMotor.setTargetPosition(DriveMode.armAngleExtendedPosition);
         }
         drive.sleepMillis(650);
     }
