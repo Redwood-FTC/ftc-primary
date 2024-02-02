@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.teleop;
 
 import android.graphics.Color;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -15,15 +16,22 @@ public class Pixel {
     private RobotDrive drive;
     private NormalizedColorSensor colorSensor;
     private Servo purplePixelServo;
+    private DcMotor armAngleMotor;
+    private DcMotor armExtensionMotor;
+    private Servo wristServo;
     private final float[] hsvValues = new float[3];
     private double PIXEL_DROPPED = AutonomousMode.PIXEL_DROPPED;
 
     public Pixel(AutonomousMode.PropPosition propPosition, RobotDrive drive,
-                 NormalizedColorSensor colorSensor, Servo purplePixelServo) {
+                 NormalizedColorSensor colorSensor, Servo purplePixelServo,
+                 DcMotor armAngleMotor, DcMotor armExtensionMotor, Servo wristServo) {
         this.teamPropPosition = propPosition;
         this.drive = drive;
         this.colorSensor = colorSensor;
         this.purplePixelServo = purplePixelServo;
+        this.armAngleMotor = armAngleMotor;
+        this.armExtensionMotor = armExtensionMotor;
+        this.wristServo = wristServo;
     }
 
     public void deliverPayload(boolean goToBoard) {
@@ -128,12 +136,17 @@ public class Pixel {
 
        // code for dropping the yellow pixel as well:
         drive.turn(Turn.LEFT_90);
-
+        // strafe into position
         drive.drive(Drive.CENTER_TO_MIDDLE);
         // extend pixel arm and release pixel
+        extendArm();
+        // drive to the board
         drive.drive(Drive.CENTER_TO_BOARD);
+        // release pixel
         drive.drive(Drive.FROM_BOARD_BACK);
         // retract pixel arm
+        retractArm();
+        // go back to the board
         drive.drive(Drive.FROM_BOARD_FORWARDS);
     }
 
@@ -152,6 +165,28 @@ public class Pixel {
         drive.drive(Drive.FROM_BOARD_BACK);
 
         // code for dropping the yellow pixel as well:
+    }
+
+    private void extendArm() {
+        double startExtendTime = System.currentTimeMillis();
+        // Begin raising armAngleMotor
+        armAngleMotor.setTargetPosition(5000);
+        if ((System.currentTimeMillis() - startExtendTime) > 1000) {
+            wristServo.setPosition(0.76); // USE EXTENSION OF ARM MOTOR TO DETERMINE EXTENSION
+        } // Separate if statement for separate tuning
+        if ((System.currentTimeMillis() - startExtendTime) > 1000) {
+            armExtensionMotor.setTargetPosition(-1000); //was -2100
+        }
+        drive.sleepMillis(650);
+    }
+    // elements of typpographic style
+
+    private void retractArm() {
+        armAngleMotor.setTargetPosition(0); //retract pixel arm
+        armExtensionMotor.setTargetPosition(0);
+        wristServo.setPosition(1.0);
+
+        drive.sleepMillis(750);
     }
 
     public enum Direction {
