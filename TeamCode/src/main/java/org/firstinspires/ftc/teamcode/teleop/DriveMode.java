@@ -105,12 +105,12 @@ public class DriveMode extends OpMode {
     public static double unwindWinchPower = -1.0;
     public static double windWinchPower = 1.0;
     public static double raisedIntakePosition = 0.4;
-    public static int raisedArmPosition = 7200;
+    public static int raisedArmPosition = 5000;
     public static long wristArmChangeDelay = 1000;
     public static long armExtensionDelay = 1000;
     public static double wristArmExtendedPosition = 0.76;
     public static double wristArmRetractedPosition = 1.0;
-    public static int armAngleExtendedPosition = -1700;
+    public static int armAngleExtendedPosition = -1300;
     public static double loweredIntakePosition = 0.0;
     public static double releasedHookPosition = 0.4;
     public static double heldHookPosition = 0.47;
