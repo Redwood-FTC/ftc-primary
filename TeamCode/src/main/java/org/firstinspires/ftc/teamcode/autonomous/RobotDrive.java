@@ -43,7 +43,7 @@ public class RobotDrive {
 
     // drive constants
     public static double startLeftCenterStartAmount = 300;
-    public static double startRightCenterStartAmount = startLeftCenterStartAmount;
+    public static double startRightCenterStartAmount = 400;
     public static double toPixelCenter = 900;
     public static double toBoardTime = 150;
     public static double universalMotorSpeed = 1280;
@@ -60,7 +60,7 @@ public class RobotDrive {
     public static double rightToBoard = 0;
 
     public static double turnRight90Amount = 890;
-    public static double turnLeft90Amount = turnRight90Amount; // separate because there have been consistency issues
+    public static double turnLeft90Amount = 950; // separate because there have been consistency issues
 
     public RobotDrive(HardwareMap hardwareMap){
        leftFront = hardwareMap.get(DcMotorEx.class, "left_front");
