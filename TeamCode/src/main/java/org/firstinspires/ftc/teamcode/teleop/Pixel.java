@@ -18,13 +18,15 @@ public class Pixel {
     private Servo purplePixelServo;
     private DcMotor armAngleMotor;
     private DcMotor armExtensionMotor;
+    private Servo bucketServo;
     private Servo wristServo;
     private final float[] hsvValues = new float[3];
     private double PIXEL_DROPPED = AutonomousMode.PIXEL_DROPPED;
 
     public Pixel(AutonomousMode.PropPosition propPosition, RobotDrive drive,
                  NormalizedColorSensor colorSensor, Servo purplePixelServo,
-                 DcMotor armAngleMotor, DcMotor armExtensionMotor, Servo wristServo) {
+                 DcMotor armAngleMotor, DcMotor armExtensionMotor, Servo wristServo,
+                 Servo bucketServo) {
         this.teamPropPosition = propPosition;
         this.drive = drive;
         this.colorSensor = colorSensor;
@@ -32,6 +34,7 @@ public class Pixel {
         this.armAngleMotor = armAngleMotor;
         this.armExtensionMotor = armExtensionMotor;
         this.wristServo = wristServo;
+        this.bucketServo = bucketServo;
     }
 
     public void deliverPayload(boolean goToBoard) {
@@ -108,12 +111,13 @@ public class Pixel {
         long centerTime = goToTape(Direction.FORWARDS);
         // turn right
         drive.turn(Turn.LEFT_90);
-        // go until tape?
+        // go until tape
         long leftTime = goToTape(Direction.FORWARDS);
         // release pixel
         purplePixelServo.setPosition(PIXEL_DROPPED);
         // get away from the pixel
         drive.drive(Drive.FROM_BOARD_BACK);
+
 
         // code for dropping the yellow pixel as well:
         // go until center
@@ -132,22 +136,26 @@ public class Pixel {
         purplePixelServo.setPosition(PIXEL_DROPPED);
 
        // pixel drop only code:
-//       drive.drive(Drive.FROM_BOARD_BACK);
+       drive.drive(Drive.FROM_BOARD_BACK);
 
        // code for dropping the yellow pixel as well:
-        drive.turn(Turn.LEFT_90);
-        // strafe into position
-        drive.drive(Drive.CENTER_TO_MIDDLE);
-        // extend pixel arm and release pixel
-        extendArm();
-        // drive to the board
-        drive.drive(Drive.CENTER_TO_BOARD);
-        // release pixel
-        drive.drive(Drive.FROM_BOARD_BACK);
-        // retract pixel arm
-        retractArm();
-        // go back to the board
-        drive.drive(Drive.FROM_BOARD_FORWARDS);
+//        drive.goForTime(startTime, Direction.BACKWARDS, Speed.SLOW);
+//
+//        drive.turn(Turn.LEFT_90);
+//        // strafe into position
+//        drive.drive(Drive.CENTER_TO_MIDDLE); // currently does nothing
+//        // extend pixel arm
+//        extendArm();
+//        // drive to the board
+//        drive.drive(Drive.CENTER_TO_BOARD);
+//        // release the pixel from the arm
+//        releasePixel();
+//        // drive back a bit so we have room to retract the arm
+//        drive.drive(Drive.FROM_BOARD_BACK);
+//        // retract pixel arm
+//        retractArm();
+//        // go back to the board
+//        drive.drive(Drive.FROM_BOARD_FORWARDS);
     }
 
     private void rightProtocol() {
@@ -155,7 +163,7 @@ public class Pixel {
         long centerTime = goToTape(Direction.FORWARDS);
         // turn right
         drive.turn(Turn.RIGHT_90);
-        // go until tape?
+        // go until tape
         long rightTime = goToTape(Direction.FORWARDS);
         // release pixel
         purplePixelServo.setPosition(PIXEL_DROPPED);
@@ -171,22 +179,27 @@ public class Pixel {
         double startExtendTime = System.currentTimeMillis();
         // Begin raising armAngleMotor
         armAngleMotor.setTargetPosition(DriveMode.raisedArmPosition);
-        if ((System.currentTimeMillis() - startExtendTime) > 1000) {
+        if ((System.currentTimeMillis() - startExtendTime) > DriveMode.wristArmChangeDelay) {
             wristServo.setPosition(DriveMode.wristArmExtendedPosition); // USE EXTENSION OF ARM MOTOR TO DETERMINE EXTENSION
         } // Separate if statement for separate tuning
-        if ((System.currentTimeMillis() - startExtendTime) > 1000) {
+        if ((System.currentTimeMillis() - startExtendTime) > DriveMode.armExtensionDelay) {
             armExtensionMotor.setTargetPosition(DriveMode.armAngleExtendedPosition);
         }
-        drive.sleepMillis(650);
+        drive.sleepMillis(1000);
     }
     // elements of typpographic style
 
     private void retractArm() {
         armAngleMotor.setTargetPosition(0); //retract pixel arm
         armExtensionMotor.setTargetPosition(0);
-        wristServo.setPosition(1.0);
+        wristServo.setPosition(DriveMode.wristArmRetractedPosition);
 
-        drive.sleepMillis(750);
+        drive.sleepMillis(1500);
+    }
+
+    private void releasePixel() {
+        bucketServo.setPosition(DriveMode.dropBucketPixelPosition);
+        drive.sleepMillis(1500);
     }
 
     public enum Direction {
