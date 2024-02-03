@@ -114,7 +114,7 @@ public class AutonomousMode extends DriveMode {
         startTime = System.currentTimeMillis();
     }
 
-    private boolean once = false;
+    public boolean once = false;
 
     @Override
     public void loop() {
@@ -123,9 +123,17 @@ public class AutonomousMode extends DriveMode {
         if (once) return;
         once = true;
 
+//        if (startingSide == StartingSide.LEFT) {
+//            drive.drive(Drive.STARTLEFT_CENTER_START);
+//        } else {
+//            drive.drive(Drive.STARTRIGHT_CENTER_START);
+//        }
+//
+//        if (true) return;
+
 //        drive.init();
 //        drive.drive(Drive.TO_PIXEL_CENTER);
-//        drive.turn(Turn.RIGHT_90);
+//        drive.turn(Turn.LEFT_90);
 //        drive.drive(Drive.FORWARDS_SLOW);
 //        if (once) return;
 
@@ -139,14 +147,14 @@ public class AutonomousMode extends DriveMode {
         // (so we are always in the same place when we end, and that is where we end if we drop left)
         // above comments are outdated
         pixel = new Pixel(teamPropPosition, drive, colorSensor, purplePixelServo, armAngleMotor,
-                          armExtensionMotor, wristServo);
+                          armExtensionMotor, wristServo, bucketServo);
         pixel.deliverPayload(getStartingPosition() == StartingPosition.BACKSTAGE);
 
         if (getStartingPosition() == StartingPosition.FRONTSTAGE) {
             return;
         }
 
-        if (once) return;
+        if (once) return; // we aren't doing any of this, and it's all in Pixel now anyways
 
         // turn around, retract arm, go forward and drop yellow pixel
         dropYellowPixel();
