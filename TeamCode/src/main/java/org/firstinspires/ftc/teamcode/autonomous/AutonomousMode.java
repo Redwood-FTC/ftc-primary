@@ -342,7 +342,7 @@ public class AutonomousMode extends DriveMode {
             // If we run out of time, assume the team prop is on !startingSide
             long timeSinceStart = System.currentTimeMillis() - startTime;
             if (timeSinceStart > maxSignalDelay) {
-                teamPropPosition = (startingSide == StartingSide.LEFT) ? PropPosition.RIGHT : PropPosition.LEFT;
+                teamPropPosition = PropPosition.RIGHT;
                 break;
             }
 
