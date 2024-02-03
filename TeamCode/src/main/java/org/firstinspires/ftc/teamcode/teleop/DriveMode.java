@@ -113,7 +113,7 @@ public class DriveMode extends OpMode {
     public static int armAngleExtendedPosition = -1700;
     public static double loweredIntakePosition = 0.0;
     public static double releasedHookPosition = 0.4;
-    public static double heldHookPosition = 0.46;
+    public static double heldHookPosition = 0.47;
     public static double dropBucketPixelPosition = 0.0;
     public static double loadBucketPixelPosition = 1.0;
     public static double initialIntakeAnglePosition = 1;
